@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { styles } from "../../styles/styles";
+import { getStyles } from "../../styles/styles";
 import Popup from "../Popup";
 
 function HomePage({ textSize }) {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const styles = getStyles(textSize); // Get styles based on textSize
+
   return (
     <div style={styles.pageContainer}>
       <div style={styles.contentBox(textSize)}>
@@ -13,15 +15,7 @@ function HomePage({ textSize }) {
         </p>
         <button
           onClick={() => setIsPopupOpen(true)}
-          style={{
-            backgroundColor: "#000",
-            color: "#fff",
-            padding: "10px 20px",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-            marginTop: "20px",
-          }}
+          style={styles.button(textSize)}
         >
           Open Popup
         </button>
@@ -30,21 +24,14 @@ function HomePage({ textSize }) {
         isOpen={isPopupOpen}
         onClose={() => setIsPopupOpen(false)}
         title="Welcome to Our Library"
+        textSize={textSize}
       >
         <h3>Get Started Today!</h3>
         <p>Browse our collection of thousands of books.</p>
         <p>Search for your favorite titles or explore new genres.</p>
 
         <button
-          style={{
-            backgroundColor: "#000",
-            color: "#fff",
-            padding: "10px 20px",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-            marginTop: "15px",
-          }}
+          style={styles.button(textSize)}
           onClick={() => setIsPopupOpen(false)}
         >
           Got it!

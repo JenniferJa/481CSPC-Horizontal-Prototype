@@ -1,23 +1,24 @@
 import React, { useState } from "react";
 import NavigationBar from "./components/NavigationBar";
 import HomePage from "./components/pages/HomePage";
-import BrowseItems from "./components/pages/BrowseItemsPage";
-import BookTinder from "./components/pages/BookTinderPage";
+import BrowseItemsPage from "./components/pages/BrowseItemsPage";
+import BookTinderPage from "./components/pages/BookTinderPage";
 import ProfilePage from "./components/pages/ProfilePage";
-import { styles } from "./styles/styles";
+import { getStyles } from "./styles/styles";
 
 function App() {
   const [currentPage, setCurrentPage] = useState("home");
   const [textSize, setTextSize] = useState("normal");
+  const styles = getStyles(textSize);
 
   const renderPage = () => {
     switch (currentPage) {
       case "home":
         return <HomePage textSize={textSize} />;
       case "browse":
-        return <BrowseItems textSize={textSize} />;
+        return <BrowseItemsPage textSize={textSize} />;
       case "tinder":
-        return <BookTinder textSize={textSize} />;
+        return <BookTinderPage textSize={textSize} />;
       case "profile":
         return <ProfilePage textSize={textSize} />;
       default:
