@@ -1,6 +1,6 @@
-import React from 'react';
-import { Type, User } from 'lucide-react';
-import { styles } from '../styles/styles';
+import React from "react";
+import { ALargeSmall, User } from "lucide-react";
+import { styles } from "../styles/styles";
 
 function NavigationBar({ currentPage, setCurrentPage, textSize, setTextSize }) {
   return (
@@ -13,21 +13,30 @@ function NavigationBar({ currentPage, setCurrentPage, textSize, setTextSize }) {
 
         {/* Center: Links */}
         <div style={styles.navLinks}>
-          <button 
-            style={{...styles.navLink, ...(currentPage === 'home' && styles.navLinkActive)}}
-            onClick={() => setCurrentPage('home')}
+          <button
+            style={{
+              ...styles.navLink,
+              ...(currentPage === "home" && styles.navLinkActive),
+            }}
+            onClick={() => setCurrentPage("home")}
           >
             Home
           </button>
-          <button 
-            style={{...styles.navLink, ...(currentPage === 'browse' && styles.navLinkActive)}}
-            onClick={() => setCurrentPage('browse')}
+          <button
+            style={{
+              ...styles.navLink,
+              ...(currentPage === "browse" && styles.navLinkActive),
+            }}
+            onClick={() => setCurrentPage("browse")}
           >
             Browse Items
           </button>
-          <button 
-            style={{...styles.navLink, ...(currentPage === 'tinder' && styles.navLinkActive)}}
-            onClick={() => setCurrentPage('tinder')}
+          <button
+            style={{
+              ...styles.navLink,
+              ...(currentPage === "tinder" && styles.navLinkActive),
+            }}
+            onClick={() => setCurrentPage("tinder")}
           >
             Book Tinder
           </button>
@@ -35,16 +44,18 @@ function NavigationBar({ currentPage, setCurrentPage, textSize, setTextSize }) {
 
         {/* Right: Text Size & Profile */}
         <div style={styles.navRight}>
-          <button 
+          <button
             style={styles.iconButton}
-            onClick={() => setTextSize(textSize === 'normal' ? 'large' : 'normal')}
+            onClick={() =>
+              setTextSize(textSize === "normal" ? "large" : "normal")
+            }
             title="Enlarge Text"
           >
-            <Type size={20} />
+            <ALargeSmall size={20} />
           </button>
-          <button 
+          <button
             style={styles.profileButton}
-            onClick={() => setCurrentPage('profile')}
+            onClick={() => setCurrentPage("profile")}
           >
             <User size={20} />
             Profile

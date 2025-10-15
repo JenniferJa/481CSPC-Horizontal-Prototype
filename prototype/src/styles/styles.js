@@ -6,7 +6,7 @@ export const styles = {
   },
   navbar: {
     backgroundColor: "#000",
-    padding: "0 20px",
+    padding: "0",
     boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
     position: "sticky",
     top: 0,
@@ -19,6 +19,8 @@ export const styles = {
     maxWidth: "1200px",
     margin: "0 auto",
     height: "70px",
+    paddingLeft: "0px",
+    paddingRight: "0px",
   },
   navTitle: {
     flex: 1,
