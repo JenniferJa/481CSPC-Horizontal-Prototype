@@ -3,14 +3,18 @@ export const getStyles = (textSize) => {
   const titleFontSize = textSize === "large" ? 28 : 24;
   const buttonFontSize = textSize === "large" ? 16 : 14;
 
+  const primaryColor = "#86212fff"
+
   return {
     appContainer: {
       minHeight: "100vh",
       backgroundColor: "#f5f5f5",
       fontFamily: "Arial, sans-serif",
     },
+
+    // ============= NAV BAR =============
     navbar: {
-      backgroundColor: "#000",
+      backgroundColor: primaryColor,
       padding: "0",
       boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
       position: "sticky",
@@ -29,22 +33,36 @@ export const getStyles = (textSize) => {
     },
     navTitle: {
       flex: 1,
+      display: "flex",
+      alignItems: "center",
     },
     titleText: {
-      color: "#fff",
+      color: "#ffd3d3e8",
       margin: 0,
-      fontSize: titleFontSize,
-      fontWeight: "bold",
+      fontSize: baseFontSize,
+    },
+    subTitleText: {
+      color: "#ffffffff",
+      margin: 0,
+      fontSize: baseFontSize
+    },
+    logo: {
+      height: "60px"
+    },
+    logoButton: {
+        background: "none",
+        border: "none",
+        cursor: "pointer"
     },
     navLinks: {
-      flex: 2,
+      flex: "0 1 auto",
       display: "flex",
       justifyContent: "center",
       gap: "30px",
     },
     navLink: {
       color: "#fff",
-      backgroundColor: "#000",
+      backgroundColor: primaryColor,
       border: "none",
       fontSize: buttonFontSize,
       padding: textSize === "large" ? "12px 20px" : "8px 16px",
@@ -53,7 +71,7 @@ export const getStyles = (textSize) => {
       cursor: "pointer",
     },
     navLinkActive: {
-      backgroundColor: "#333",
+      backgroundColor: "#ffffff42",
       fontWeight: "bold",
     },
     navRight: {
@@ -64,7 +82,7 @@ export const getStyles = (textSize) => {
       gap: "15px",
     },
     iconButton: {
-      backgroundColor: "#000",
+      backgroundColor: primaryColor,
       border: "2px solid #fff",
       color: "#fff",
       padding: textSize === "large" ? "12px 16px" : "8px 12px",
@@ -76,7 +94,7 @@ export const getStyles = (textSize) => {
       transition: "background-color 0.3s",
     },
     profileButton: {
-      backgroundColor: "#000",
+      backgroundColor: primaryColor,
       color: "#fff",
       border: "2px solid #fff",
       padding: textSize === "large" ? "12px 20px" : "8px 16px",
@@ -111,6 +129,9 @@ export const getStyles = (textSize) => {
       fontSize: size === "large" ? "16px" : "14px",
       fontWeight: "500",
     }),
+
+
+    // ============= POPUPS =============
     popupBackdrop: {
       position: "fixed",
       top: 0,
