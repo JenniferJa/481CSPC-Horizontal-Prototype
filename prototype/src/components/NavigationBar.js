@@ -7,7 +7,7 @@ function NavigationBar({ currentPage, setCurrentPage, textSize, setTextSize }) {
 
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   useEffect(() => {
-    const handleResize = () => setIsSmallScreen(window.innerWidth < 900);
+    const handleResize = () => setIsSmallScreen(window.innerWidth < 950);
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);

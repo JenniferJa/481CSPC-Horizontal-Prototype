@@ -39,12 +39,12 @@ export const getStyles = (textSize) => {
     titleText: {
       color: "#ffd3d3e8",
       margin: 0,
-      fontSize: baseFontSize,
+      fontSize: "15px",
     },
     subTitleText: {
       color: "#ffffffff",
       margin: 0,
-      fontSize: baseFontSize
+      fontSize: "15px"
     },
     logo: {
       height: "60px"
