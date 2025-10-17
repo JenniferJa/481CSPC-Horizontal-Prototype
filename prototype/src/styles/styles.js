@@ -55,7 +55,7 @@ export const getStyles = (textSize) => {
         cursor: "pointer"
     },
     navLinks: {
-      flex: "0 1 auto",
+      flex: 2,
       display: "flex",
       justifyContent: "center",
       gap: "30px",
@@ -68,7 +68,7 @@ export const getStyles = (textSize) => {
       padding: textSize === "large" ? "12px 20px" : "8px 16px",
       borderRadius: "4px",
       transition: "background-color 0.3s",
-      cursor: "pointer",
+      cursor: "pointer"
     },
     navLinkActive: {
       backgroundColor: "#ffffff42",
@@ -80,6 +80,7 @@ export const getStyles = (textSize) => {
       justifyContent: "flex-end",
       alignItems: "center",
       gap: "15px",
+      paddingLeft: "10px"
     },
     iconButton: {
       backgroundColor: primaryColor,
