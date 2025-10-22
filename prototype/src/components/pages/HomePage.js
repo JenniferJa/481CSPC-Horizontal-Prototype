@@ -7,37 +7,49 @@ function HomePage({ textSize }) {
   const styles = getStyles(textSize); // Get styles based on textSize
 
   return (
-    <div style={styles.pageContainer}>
-      <div style={styles.contentBox(textSize)}>
-        <h2>Welcome to UofC Library</h2>
-        <p>
-          Discover millions of books and resources available at your fingertips.
-        </p>
-        <button
-          onClick={() => setIsPopupOpen(true)}
-          style={styles.button(textSize)}
-        >
-          Open Popup
-        </button>
+    <div>
+      {/* background image and title */}
+      <div style={styles.homeContainer}>
+        <div style={styles.pageContainer}>
+          <h1 style={styles.homeTitle}>
+            Welcome to UofC Libraries and Cultural Resources
+          </h1> 
+          <input type="text" 
+            placeholder="Search for books, articles, and more..."
+            style={styles.homeSearchBar}/>
+            <button style={styles.homeSearchButton}>Search</button>
+        </div>
       </div>
-      <Popup
-        isOpen={isPopupOpen}
-        onClose={() => setIsPopupOpen(false)}
-        title="Welcome to Our Library"
-        textSize={textSize}
-      >
-        <h3>Get Started Today!</h3>
-        <p>Browse our collection of thousands of books.</p>
-        <p>Search for your favorite titles or explore new genres.</p>
 
-        <button
-          style={styles.button(textSize)}
-          onClick={() => setIsPopupOpen(false)}
-        >
-          Got it!
-        </button>
-      </Popup>
+      {/* info / bottom section  */}
+      <div style={styles.pageContainer}>
+        <h1>
+          Our Services
+        </h1>
+        <p>
+          University of Calgary's Libraries and Cultural Resources (LCR) is here to improve your learning experience by focusing on user-centric resources to ensure you get the most out of your education or research.
+        </p>
+        <p>
+          More than 7.8 million items are housed at the High Density Storage Facility and seven university libraries: the Taylor Family Digital Library, Doucette Library, Bennett Jones Law Library, Business Library, Gallagher Library, Health Sciences Library and the Military Museums Library & Archives.
+        </p>
+        <div style={styles.homeScrollContainer}>
+          <div style={styles.homeImageContainer}>
+            <img src="images/tfdl2.png" style={styles.homeImage}/>
+          </div>
+                    <div style={styles.homeImageContainer}>
+            <img src="images/tfdl2.png" style={styles.homeImage}/>
+          </div>
+                    <div style={styles.homeImageContainer}>
+            <img src="images/tfdl2.png" style={styles.homeImage}/>
+          </div>
+                    <div style={styles.homeImageContainer}>
+            <img src="images/tfdl2.png" style={styles.homeImage}/>
+          </div>
+        </div>
+      </div>
     </div>
+
+
   );
 }
 

@@ -2,8 +2,10 @@ export const getStyles = (textSize) => {
   const baseFontSize = textSize === "large" ? 18 : 16;
   const titleFontSize = textSize === "large" ? 28 : 24;
   const buttonFontSize = textSize === "large" ? 16 : 14;
+  const headerFontSize = textSize === "large" ? 40 : 36;
 
   const primaryColor = "#86212fff"
+  const secondaryColor = "#297373"
 
   return {
     appContainer: {
@@ -108,6 +110,9 @@ export const getStyles = (textSize) => {
       gap: "8px",
       transition: "background-color 0.3s",
     },
+
+
+    // ============= GENERAL =============
     pageContainer: {
       padding: "40px 20px",
       maxWidth: "1200px",
@@ -130,6 +135,51 @@ export const getStyles = (textSize) => {
       fontSize: size === "large" ? "16px" : "14px",
       fontWeight: "500",
     }),
+
+
+    // ============= HOME PAGE =============
+    homeContainer: {
+      width: "100%",
+      height: "70vh", 
+      backgroundImage: `linear-gradient(#000000E0 0%, #00000053 30%, #0000003e 100%), url('images/tfdl1.jpg')`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      color: "#FFF"
+    },
+    homeTitle: {
+      paddingTop: "25vh",
+      paddingBottom: "20px",
+      fontSize: headerFontSize
+    },
+    homeSearchBar: {
+      width: "60%",
+      height: baseFontSize*2.5,
+      border: "0px",
+      fontSize: baseFontSize,
+      paddingLeft: "20px"
+    },
+    homeSearchButton: {
+      width: "120px",
+      height: baseFontSize*2.5,
+      border: "0px",
+      fontSize: baseFontSize,
+      color: "#FFF",
+      backgroundColor: secondaryColor
+    },
+    homeScrollContainer: {
+      gap: "8%",
+      display: "flex",
+      overflowX: "auto",
+    },
+    homeImageContainer: {
+      flex: "0 0 23%",
+    },
+    homeImage: {
+      width: "100%",
+      height: "200px",
+      objectFit: "cover",
+
+    },
 
 
     // ============= POPUPS =============
