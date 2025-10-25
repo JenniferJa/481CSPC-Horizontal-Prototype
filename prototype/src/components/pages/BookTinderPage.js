@@ -1,85 +1,215 @@
-import React, { useMemo, useState, useCallback } from "react";
-import BookCard from "../BookCard";
+import React, { useMemo, useState, useCallback, useEffect, useRef } from "react";
 
 export default function BookTinderPage({ textSize = "normal" }) {
   const scale = textSize === "large" ? 1.1 : textSize === "xlarge" ? 1.25 : 1.0;
 
-  const books = useMemo(
-    () => [
-      {
-        id: "bk1",
-        title: "The Algorithm’s Apprentice",
-        author: "J. Rivera",
-        year: 2022,
-        genre: "Sci-Fi",
-        cover:
-          "https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=600&auto=format&fit=crop",
-        blurb:
-          "A junior engineer trains a sentient model, blurring the line between tool and teammate."
-      },
-      {
-        id: "bk2",
-        title: "Dust & Data",
-        author: "S. Choi",
-        year: 2020,
-        genre: "Mystery",
-        cover:
-          "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=600&auto=format&fit=crop",
-        blurb:
-          "A data journalist uncovers a cold case hidden in corrupted backups and broken drives."
-      },
-      {
-        id: "bk3",
-        title: "The Library at Dawn",
-        author: "A. Karim",
-        year: 2023,
-        genre: "Fantasy",
-        cover:
-          "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=600&auto=format&fit=crop",
-        blurb:
-          "At sunrise, a secret wing appears—its books rewrite themselves to match your memories."
-      },
-      {
-        id: "bk4",
-        title: "Signals in the Noise",
-        author: "N. Patel",
-        year: 2019,
-        genre: "Non-fiction",
-        cover:
-          "https://images.unsplash.com/photo-1457694587812-e8bf29a43845?q=80&w=600&auto=format&fit=crop",
-        blurb:
-          "A hands-on guide to pattern recognition, with stories from music, markets, and medicine."
-      },
-      {
-        id: "bk5",
-        title: "Prototype Hearts",
-        author: "M. Alvarez",
-        year: 2024,
-        genre: "Romance",
-        cover:
-          "https://images.unsplash.com/photo-1528207776546-365bb710ee93?q=80&w=600&auto=format&fit=crop",
-        blurb:
-          "Two founders iterate on an app—and their relationship—through sprints, standups, and setbacks."
-      }
-    ],
-    []
-  );
-
+  const [subjectScore, setSubjectScore] = useState(() => new Map());
+  const [authorScore, setAuthorScore] = useState(() => new Map());
+  const [queue, setQueue] = useState([]);
   const [idx, setIdx] = useState(0);
   const [liked, setLiked] = useState([]);
   const [passed, setPassed] = useState([]);
-  const [history, setHistory] = useState([]); // stack of {id, action}
+  const [history, setHistory] = useState([]);
+  const current = idx < queue.length ? queue[idx] : null;
 
-  const current = idx < books.length ? books[idx] : null;
+  const fetchingRef = useRef(false);
+  const firstBatchShuffledRef = useRef(false);
+
+  const queryPagesRef = useRef(new Map());
+  const initialPageSeedRef = useRef(1 + Math.floor(Math.random() * 5));
+
+  const RAW_SEED_SUBJECTS = useMemo(
+    () => [
+      "young_adult_fiction",
+      "new_adult_fiction",
+      "contemporary_romance",
+      "dystopian",
+      "urban_fantasy",
+      "thrillers",
+      "sports_fiction",
+    ],
+    []
+  );
+  const seedSubjectsRef = useRef(shuffleArray(RAW_SEED_SUBJECTS));
+
+  const YEAR_MIN = 2008;
+  const CURRENT_YEAR = new Date().getFullYear();
+  const BATCH_SIZE = 30;
+  const TOP_UP_THRESHOLD = 8;
+
+  const coverURL = (cover_i, size = "L") =>
+    cover_i ? `https://covers.openlibrary.org/b/id/${cover_i}-${size}.jpg` : null;
+
+  const isEnglish = (doc) => {
+    const langs = doc?.language || doc?.languages;
+    if (Array.isArray(langs)) {
+      const codes = langs.map((x) => String(x).toLowerCase());
+      return codes.includes("eng") || codes.includes("english");
+    }
+    return true;
+  };
+
+  const normalizeDoc = (doc) => {
+    const author = Array.isArray(doc.author_name) ? doc.author_name[0] : doc.author_name || "Unknown";
+    const subjects = Array.isArray(doc.subject) ? doc.subject.slice(0, 8) : [];
+    return {
+      id: doc.key || doc.cover_edition_key || `${doc.title}-${author}`,
+      title: doc.title,
+      author,
+      year: doc.first_publish_year || "",
+      genre: subjects[0] || "General",
+      subjects,
+      cover: coverURL(doc.cover_i),
+      blurb: doc.subtitle || (subjects.length ? `Subjects: ${subjects.slice(0, 3).join(", ")}` : "An intriguing read."),
+    };
+  };
+
+  const filterForAgeGroup = (b) => !b.year || b.year >= YEAR_MIN;
+
+  const uniqueMerge = (existing, incoming) => {
+    const seen = new Set(existing.map((b) => b.id));
+    const merged = [...existing];
+    for (const b of incoming) {
+      if (!seen.has(b.id) && b.title && b.author) {
+        seen.add(b.id);
+        merged.push(b);
+      }
+    }
+    return merged;
+  };
+
+  const scoreBook = (b) => {
+    const subjBoost = (b.subjects || []).reduce((acc, s) => acc + (subjectScore.get(s) || 0), 0);
+    const authBoost = (authorScore.get(b.author) || 0) * 2;
+
+    let recency = 0;
+    if (b.year && b.year >= YEAR_MIN) {
+      const span = Math.max(1, CURRENT_YEAR - YEAR_MIN);
+      recency = Math.min(3, ((b.year - YEAR_MIN) / span) * 3);
+    }
+
+    const YA_THEMES = new Set([
+      "young_adult_fiction",
+      "new_adult_fiction",
+      "contemporary_romance",
+      "dystopian",
+      "urban_fantasy",
+      "thrillers",
+      "sports_fiction",
+    ]);
+    const themeBoost = (b.subjects || []).some((s) => YA_THEMES.has(String(s).toLowerCase())) ? 2 : 0;
+
+    return subjBoost + authBoost + recency + themeBoost;
+  };
+
+  const pickQueries = () => {
+    const ss = [...subjectScore.entries()];
+    const as = [...authorScore.entries()];
+
+    const subjectCandidates = ss.length
+      ? ss.sort((a, b) => b[1] - a[1]).slice(0, 6).map(([s]) => s)
+      : seedSubjectsRef.current;
+
+    const authorCandidates = as.length
+      ? as.sort((a, b) => b[1] - a[1]).slice(0, 3).map(([a]) => a)
+      : [];
+
+    const q = [
+      ...subjectCandidates.map((s) => `subject:${encodeURIComponent(s)} language:eng`),
+      ...authorCandidates.map((a) => `author:${encodeURIComponent(a)} language:eng`),
+    ];
+
+    return shuffleArray(q);
+  };
+
+  const fetchBatch = async () => {
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
+    try {
+      const queries = pickQueries();
+      const perQuery = Math.max(10, Math.ceil(BATCH_SIZE / Math.max(1, queries.length)));
+
+      const urls = queries.map((q) => {
+        const currentPage =
+          queryPagesRef.current.get(q) ?? initialPageSeedRef.current;
+        queryPagesRef.current.set(q, currentPage + 1);
+
+        return `https://openlibrary.org/search.json?${new URLSearchParams({
+          q,
+          page: String(currentPage),
+          fields:
+            "key,title,author_name,first_publish_year,cover_i,subject,subtitle,cover_edition_key,language",
+          limit: String(perQuery),
+        }).toString()}`;
+      });
+
+      const results = await Promise.allSettled(urls.map((u) => fetch(u).then((r) => r.json())));
+      let docs = results
+        .filter((r) => r.status === "fulfilled" && r.value?.docs)
+        .flatMap((r) => r.value.docs)
+        .filter(isEnglish)
+        .map(normalizeDoc)
+        .filter(filterForAgeGroup);
+
+      docs.sort((a, b) => scoreBook(b) - scoreBook(a));
+
+      setQueue((prev) => {
+        let merged = uniqueMerge(prev, docs);
+        if (prev.length === 0 && !firstBatchShuffledRef.current) {
+          firstBatchShuffledRef.current = true;
+          merged = shuffleArray(merged);
+        }
+        return merged;
+      });
+    } catch (e) {
+      console.warn("Open Library fetch error:", e);
+    } finally {
+      fetchingRef.current = false;
+    }
+  };
+
+  useEffect(() => {
+    if (queue.length === 0) fetchBatch();
+  }, []);
+
+  useEffect(() => {
+    if (queue.length - idx <= TOP_UP_THRESHOLD) fetchBatch();
+  }, [idx, queue.length]);
+
+  useEffect(() => {
+    if (!current) {
+      fetchBatch();
+    }
+  }, [current]);
+
+  useEffect(() => {
+    if (queue.length > 0 && idx >= queue.length) {
+      setIdx(queue.length - 1);
+    }
+  }, [queue.length, idx]);
+
+  const updatePrefs = (book, delta) => {
+    setSubjectScore((prev) => {
+      const next = new Map(prev);
+      for (const s of book.subjects || []) next.set(s, (next.get(s) || 0) + delta);
+      return next;
+    });
+    if (book.author) {
+      setAuthorScore((prev) => {
+        const next = new Map(prev);
+        next.set(book.author, (next.get(book.author) || 0) + delta);
+        return next;
+      });
+    }
+  };
 
   const doAction = useCallback(
     (action) => {
       if (!current) return;
-      if (action === "like") {
-        setLiked((prev) => [...prev, current]);
-      } else if (action === "pass") {
-        setPassed((prev) => [...prev, current]);
-      }
+      const delta = action === "like" ? +2 : -1;
+      updatePrefs(current, delta);
+      if (action === "like") setLiked((prev) => [...prev, current]);
+      else setPassed((prev) => [...prev, current]);
       setHistory((h) => [...h, { id: current.id, action }]);
       setIdx((i) => i + 1);
     },
@@ -90,29 +220,18 @@ export default function BookTinderPage({ textSize = "normal" }) {
     if (history.length === 0) return;
     const last = history[history.length - 1];
     const prevIndex = Math.max(0, idx - 1);
-    const prevBook = books[prevIndex];
-
-    // Remove from liked/passed if present
+    const prevBook = queue[prevIndex];
+    if (prevBook) {
+      const delta = last.action === "like" ? -2 : +1;
+      updatePrefs(prevBook, delta);
+    }
     setLiked((l) => l.filter((b) => b.id !== last.id));
     setPassed((p) => p.filter((b) => b.id !== last.id));
-
-    // Step back in stack
     setIdx(prevIndex);
     setHistory((h) => h.slice(0, -1));
+  }, [history, idx, queue]);
 
-    // Sanity check: ensure the last card is indeed the previous book
-    if (prevBook && prevBook.id !== last.id) {
-      // If lists got out of sync, force state reset (rare in this simple flow)
-      console.warn("Undo mismatch; resetting lists for safety.");
-      setLiked([]);
-      setPassed([]);
-      setIdx(0);
-      setHistory([]);
-    }
-  }, [history, idx, books]);
-
-  // Keyboard controls: ← pass, → like, Backspace undo
-  React.useEffect(() => {
+  useEffect(() => {
     const onKey = (e) => {
       if (e.key === "ArrowLeft") doAction("pass");
       if (e.key === "ArrowRight") doAction("like");
@@ -130,93 +249,160 @@ export default function BookTinderPage({ textSize = "normal" }) {
       flexDirection: "column",
       gap: 20,
       alignItems: "center",
-      justifyContent: "flex-start",
       transform: `scale(${scale})`,
-      transformOrigin: "top center"
+      transformOrigin: "top center",
     },
-    header: { width: "100%", maxWidth: 920, display: "flex", justifyContent: "space-between", alignItems: "center" },
+    header: {
+      width: "100%",
+      maxWidth: 920,
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
     title: { fontSize: 28, fontWeight: 700 },
-    count: { opacity: 0.7 },
     stackArea: { width: "100%", maxWidth: 520, display: "grid", placeItems: "center" },
-    controls: { display: "flex", gap: 12, marginTop: 8 },
     btn: {
       padding: "10px 16px",
       borderRadius: 12,
       border: "1px solid #e0e0e0",
       background: "#fff",
       cursor: "pointer",
-      fontWeight: 600
+      fontWeight: 600,
     },
     results: {
       width: "100%",
       maxWidth: 920,
       display: "grid",
       gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-      gap: 16
+      gap: 16,
     },
-    pill: {
-      fontSize: 12,
-      border: "1px solid #e0e0e0",
-      borderRadius: 999,
-      padding: "4px 10px",
-      background: "#fafafa"
-    }
   };
 
   return (
     <div style={base.page}>
       <div style={base.header}>
         <div style={base.title}>BookTinder</div>
-        <div style={base.count}>
-          {Math.min(idx + 1, books.length)}/{books.length}
+        <div>
+          {Math.min(idx + 1, Math.max(queue.length, 1))}/{Math.max(queue.length, 1)}
         </div>
       </div>
 
       <div style={base.stackArea}>
         {current ? (
           <>
-            <BookCard book={current} />
-            <div style={base.controls}>
-              <button aria-label="Pass" style={base.btn} onClick={() => doAction("pass")}>
+            <div
+              style={{
+                width: "100%",
+                maxWidth: 520,
+                border: "1px solid #eaeaea",
+                borderRadius: 16,
+                overflow: "hidden",
+                background: "#fff",
+                boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
+              }}
+            >
+              <DefaultBookCard book={current} />
+            </div>
+
+            <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
+              <button style={base.btn} onClick={() => doAction("pass")}>
                 ← Pass
               </button>
-              <button aria-label="Like" style={base.btn} onClick={() => doAction("like")}>
+              <button style={base.btn} onClick={() => doAction("like")}>
                 Like →
               </button>
-              <button aria-label="Undo" style={base.btn} onClick={undo} disabled={history.length === 0}>
+              <button style={base.btn} onClick={undo} disabled={history.length === 0}>
                 ⟲ Undo
               </button>
             </div>
-            <div style={{ fontSize: 12, opacity: 0.7, marginTop: 6 }}>Tip: use ← / → to pass/like, Backspace to undo.</div>
+            <div style={{ fontSize: 12, opacity: 0.7, marginTop: 6 }}>
+              Tip: use ← / → to pass/like, Backspace to undo.
+            </div>
+            <div style={{ fontSize: 11, opacity: 0.6, marginTop: 4 }}>
+              Filter: English • Year ≥ {YEAR_MIN}
+            </div>
           </>
         ) : (
-          <>
-            <div style={{ textAlign: "center" }}>
-              <h2>You're all caught up 🎉</h2>
-              <p>Review your picks below or refresh to start over.</p>
-            </div>
-            <button style={base.btn} onClick={() => { setIdx(0); setLiked([]); setPassed([]); setHistory([]); }}>
-              Restart
-            </button>
-          </>
+          <div style={{ textAlign: "center" }}>
+            <h2>Loading more books…</h2>
+          </div>
         )}
       </div>
 
-      {/* Results */}
       <div style={{ width: "100%", maxWidth: 920 }}>
-        <h3 style={{ margin: "12px 0" }}>Liked ({liked.length})</h3>
+        <h3>Liked ({liked.length})</h3>
         <div style={base.results}>
           {liked.map((b) => (
             <MiniBook key={b.id} book={b} variant="liked" />
           ))}
         </div>
 
-        <h3 style={{ margin: "16px 0 12px" }}>Passed ({passed.length})</h3>
+        <h3>Passed ({passed.length})</h3>
         <div style={base.results}>
           {passed.map((b) => (
             <MiniBook key={b.id} book={b} variant="passed" />
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function DefaultBookCard({ book }) {
+  return (
+    <div style={{ display: "grid", gridTemplateRows: "auto auto", width: "100%" }}>
+      <div
+        style={{
+          width: "100%",
+          background: "#f7f7f7",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: 360,
+        }}
+      >
+        {book.cover ? (
+          <img
+            src={book.cover}
+            alt={`${book.title} cover`}
+            style={{
+              width: "100%",
+              height: "auto",
+              maxHeight: 480,
+              objectFit: "contain",
+              display: "block",
+              background: "#fff",
+            }}
+            loading="lazy"
+          />
+        ) : (
+          <div style={{ padding: 40, color: "#777" }}>No cover available</div>
+        )}
+      </div>
+      <div style={{ padding: 16 }}>
+        <h2 style={{ margin: 0 }}>{book.title}</h2>
+        <div style={{ opacity: 0.8, marginTop: 4 }}>
+          {book.author} {book.year ? `• ${book.year}` : ""}
+        </div>
+        <p style={{ marginTop: 8 }}>{book.blurb}</p>
+        {book.subjects?.length ? (
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
+            {book.subjects.slice(0, 5).map((s) => (
+              <span
+                key={s}
+                style={{
+                  fontSize: 12,
+                  border: "1px solid #e0e0e0",
+                  borderRadius: 999,
+                  padding: "3px 8px",
+                  background: "#fafafa",
+                }}
+              >
+                {s}
+              </span>
+            ))}
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -230,29 +416,62 @@ function MiniBook({ book, variant }) {
     display: "grid",
     gridTemplateColumns: "64px 1fr",
     gap: 12,
-    background: "#fff"
+    background: "#fff",
   };
   const badgeColor = variant === "liked" ? "#e6ffed" : "#fff6f6";
   const badgeBorder = variant === "liked" ? "#8de49b" : "#ffb3b3";
 
   return (
     <div style={card}>
-      <img
-        src={book.cover}
-        alt={`${book.title} cover`}
-        style={{ width: 64, height: 96, objectFit: "cover", borderRadius: 8 }}
-      />
+      <div
+        style={{
+          width: 64,
+          height: 96,
+          borderRadius: 8,
+          overflow: "hidden",
+          background: "#f3f3f3",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {book.cover ? (
+          <img
+            src={book.cover}
+            alt={`${book.title} cover`}
+            style={{ width: "100%", height: "auto", objectFit: "contain" }}
+            loading="lazy"
+          />
+        ) : null}
+      </div>
       <div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
           <strong>{book.title}</strong>
-          <span style={{ fontSize: 12, padding: "2px 8px", borderRadius: 999, border: `1px solid ${badgeBorder}`, background: badgeColor }}>
+          <span
+            style={{
+              fontSize: 12,
+              padding: "2px 8px",
+              borderRadius: 999,
+              border: `1px solid ${badgeBorder}`,
+              background: badgeColor,
+            }}
+          >
             {variant}
           </span>
         </div>
         <div style={{ fontSize: 13, opacity: 0.8 }}>
-          {book.author} • {book.year} • {book.genre}
+          {book.author} {book.year ? `• ${book.year}` : ""} {book.genre ? `• ${book.genre}` : ""}
         </div>
       </div>
     </div>
   );
+}
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
