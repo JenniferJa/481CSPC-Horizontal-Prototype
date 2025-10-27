@@ -3,9 +3,13 @@ export const getStyles = (textSize) => {
   const titleFontSize = textSize === "large" ? 28 : 24;
   const buttonFontSize = textSize === "large" ? 16 : 14;
   const headerFontSize = textSize === "large" ? 40 : 36;
+  const textFontSize = textSize === "large" ? 16 : 14;
 
-  const primaryColor = "#86212fff"
-  const secondaryColor = "#297373"
+  const outerPadding = "20px";
+  const widMax = "1200px";
+
+  const primaryColor = "#86212fff";
+  const secondaryColor = "#297373";
 
   return {
     appContainer: {
@@ -52,9 +56,9 @@ export const getStyles = (textSize) => {
       height: "60px"
     },
     logoButton: {
-        background: "none",
-        border: "none",
-        cursor: "pointer"
+      background: "none",
+      border: "none",
+      cursor: "pointer"
     },
     navLinks: {
       flex: 2,
@@ -140,7 +144,7 @@ export const getStyles = (textSize) => {
     // ============= HOME PAGE =============
     homeContainer: {
       width: "100%",
-      height: "70vh", 
+      height: "70vh",
       backgroundImage: `linear-gradient(#000000E0 0%, #00000053 30%, #0000003e 100%), url('images/tfdl1.jpg')`,
       backgroundSize: "cover",
       backgroundPosition: "center",
@@ -153,34 +157,73 @@ export const getStyles = (textSize) => {
     },
     homeSearchBar: {
       width: "60%",
-      height: baseFontSize*2.5,
+      height: baseFontSize * 2.5,
       border: "0px",
       fontSize: baseFontSize,
       paddingLeft: "20px"
     },
     homeSearchButton: {
       width: "120px",
-      height: baseFontSize*2.5,
+      height: baseFontSize * 2.5,
       border: "0px",
       fontSize: baseFontSize,
       color: "#FFF",
       backgroundColor: secondaryColor
     },
-    homeScrollContainer: {
-      gap: "8%",
+    HomeColContainer: {
       display: "flex",
-      overflowX: "auto",
+      justifyContent: "center",
+      maxWidth: "1000px",
+      margin: "0 auto",
+      padding: "60px 20px",
+
+    },
+    homeLeftCol: {
+      flex: "1",
+      textAlign: "right",
+      padding: "5px 20px",
+      color: primaryColor,
+      fontSize: baseFontSize
+    },
+    homeRightCol: {
+      flex: "2",
+      textAlign: "left",
+      padding: "10px 20px",
+      borderLeft: `2px solid ${primaryColor}`,
+      fontSize: textFontSize
+    },
+    homeImageOverlapContainer: {
+      display: "flex",
+      justifyContent: "center",
     },
     homeImageContainer: {
-      flex: "0 0 23%",
-    },
-    homeImage: {
-      width: "100%",
-      height: "200px",
+      width: "40%",
+      height: "auto",
+      marginBottom: "-180px",
       objectFit: "cover",
-
     },
-
+    homeInfoContainer: {
+      backgroundColor: "#cfa4a488",
+      padding: "230px 60px 60px 60px",
+      fontSize: textFontSize,
+      textAlign: "center",
+      justifyContent: "center",
+      display: "flex"
+    },
+    homeInfoText: {
+      maxWidth: "1000px",
+    },
+    homeFooterContainer: {
+      textAlign: "center",
+      backgroundColor: primaryColor,
+      color: "#FFF",
+      padding: "60px 0 20px 0",
+      fontSize: textFontSize
+    },
+    homeFooterCopyright: {
+      padding: "20px",
+      color: "#ffffff8d"
+    },
 
     // ============= POPUPS =============
     popupBackdrop: {
