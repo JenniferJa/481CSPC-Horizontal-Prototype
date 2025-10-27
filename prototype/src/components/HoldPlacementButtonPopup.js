@@ -165,7 +165,7 @@ function HoldPlacementPopup({ setCurrentPage, textSize = "normal" }) {
   };
 
   return (
-    <div style={{ padding: "40px", fontFamily: "system-ui, sans-serif" }}>
+    <div style={{ fontFamily: "system-ui, sans-serif" }}>
       <button
         onClick={() => setIsOpen(true)}
         style={{
@@ -203,9 +203,14 @@ function HoldPlacementPopup({ setCurrentPage, textSize = "normal" }) {
                 ))}
               </select>
             </div>
-            <button style={styles.button(textSize)} onClick={handlePlaceHold}>
-              Place Hold
-            </button>
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <button
+                style={{ ...styles.button(textSize), width: "auto" }}
+                onClick={handlePlaceHold}
+              >
+                Place Hold
+              </button>
+            </div>
           </>
         ) : (
           <div style={customStyles.confirmationContainer}>
