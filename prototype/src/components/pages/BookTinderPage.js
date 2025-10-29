@@ -256,10 +256,13 @@ export default function BookTinderPage({ textSize = "normal" }) {
       width: "100%",
       maxWidth: 920,
       display: "flex",
-      justifyContent: "space-between",
+      justifyContent: "center",
       alignItems: "center",
+      position: "relative",
     },
-    title: { fontSize: 28, fontWeight: 700 },
+    title: { fontSize: 28, fontWeight: 700,
+      textAlign: "center"
+    },
     stackArea: { width: "100%", maxWidth: 520, display: "grid", placeItems: "center" },
     btn: {
       padding: "10px 16px",
@@ -268,6 +271,7 @@ export default function BookTinderPage({ textSize = "normal" }) {
       background: "#fff",
       cursor: "pointer",
       fontWeight: 600,
+      margin: "0 0 10px 0"
     },
     results: {
       width: "100%",
@@ -275,14 +279,20 @@ export default function BookTinderPage({ textSize = "normal" }) {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
       gap: 16,
+      padding: "10px 0"
     },
+    current: {
+      position: "absolute",
+      right: 0,
+      
+    }
   };
 
   return (
     <div style={base.page}>
       <div style={base.header}>
-        <div style={base.title}>BookTinder</div>
-        <div>
+        {/* <div style={base.title}>BookTinder</div> */}
+        <div style={base.current}>
           {Math.min(idx + 1, Math.max(queue.length, 1))}/{Math.max(queue.length, 1)}
         </div>
       </div>
