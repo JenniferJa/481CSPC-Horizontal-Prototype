@@ -55,7 +55,7 @@ const BookSection = ({ title, books, textSize, fineAmount }) => {
     display: 'flex',
     alignItems: 'center',
     fontSize: '0.9rem',
-    color: '#c00', 
+    color: 'rgba(204, 0, 31, 1)', 
     fontWeight: 'bold',
   };
 
@@ -94,15 +94,6 @@ const BookSection = ({ title, books, textSize, fineAmount }) => {
     marginRight: '10px',
   };
 
-  // Style for the date/status text on the right
-  const dateInfoStyle = {
-    fontSize: '0.9rem',
-    fontStyle: 'italic',
-    color: '#555',
-    textAlign: 'right',
-    flexShrink: 0, // Prevents shrinking if title is long
-  };
-
   // styles for the "No books in this list"
   const emptyListStyle = {
     fontStyle: 'italic',
@@ -124,8 +115,8 @@ const BookSection = ({ title, books, textSize, fineAmount }) => {
   // style for the "Cancel" button
   const cancelButtonStyle = {
     ...listButtonStyle,
-    backgroundColor: '#d9534f', 
-    borderColor: '#d43f3a',
+    backgroundColor: '#d94f5dff', 
+    border: 0,
     color: 'white',
   };
 
@@ -135,7 +126,7 @@ const BookSection = ({ title, books, textSize, fineAmount }) => {
     let dueDateText; 
     
     if (book.dueDate) {
-      dueDateText = book.dueDate; // Just the date string
+      dueDateText = ` Due: ${book.dueDate}`;
     } else {
       dueDateText = '';
     }
@@ -145,7 +136,10 @@ const BookSection = ({ title, books, textSize, fineAmount }) => {
         return ( // Return title, location, and Cancel button
           <>
             <span style={listTextStyle}>
-              {book.title} : Ready for pick up at {book.location}
+              {book.title}
+                <span style={{ color: "#c31725ff", fontWeight: "bold", marginLeft: "16px"}}>
+                  Ready for pick up at {book.location}
+                </span>
             </span>
             <button 
               style={cancelButtonStyle}
@@ -160,12 +154,12 @@ const BookSection = ({ title, books, textSize, fineAmount }) => {
       if (book.status === 'checked_out') {
         return (
           <>
-            <span style={listTextStyle}>
-              {book.title}
-            </span>
-            <span style={dateInfoStyle}>
-              Checkout {dueDateText && `(Due: ${dueDateText})`}
-            </span>
+          <span style={listTextStyle}>
+            {book.title}
+          </span>
+          <span style={{ color: '#666' }}>
+            {dueDateText}
+          </span>
           </>
         );
       }
@@ -188,14 +182,12 @@ const BookSection = ({ title, books, textSize, fineAmount }) => {
     // Handle Overdue section
     return (
       <>
-        <span style={listTextStyle}>
-          {book.title}
-        </span>
-        {dueDateText && (
-          <span style={{...dateInfoStyle, color: '#c00', fontWeight: 'bold'}}>
-            Due: {dueDateText}
-          </span>
-        )}
+      <span style={listTextStyle}>
+        {book.title}
+      </span>
+      <span style={{ color: '#666' }}>
+        {dueDateText}
+      </span>
       </>
     );
   };
@@ -263,7 +255,7 @@ function ProfilePage({ textSize }) {
   return (
     <div style={styles.pageContainer}>
       <div style={styles.contentBox(textSize)}>
-        <h2>User Profile</h2>
+        <h2 style={{ color: '#666', fontWeight: '500' }}>User Profile</h2>
         <div style={localStyles.profileHeader}>
           <span style={localStyles.profileName}>{mockUserData.name}</span>
           <span style={localStyles.profileUCID}>UCID: {mockUserData.ucid}</span>
