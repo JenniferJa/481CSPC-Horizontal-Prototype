@@ -4,7 +4,6 @@ import { findBookById } from '../../database';
 import HoldPlacementPopup from '../HoldPlacementButtonPopup'; 
 import { Heart, ChevronDown, ChevronUp } from 'lucide-react';
 
-// Pass `textSize` down from the props
 const BookSection = ({ title, books, textSize, fineAmount, setCurrentPage, setSelectedBook, setUserBookLists, activeBookIds }) => { 
   const styles = getStyles(textSize);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -15,7 +14,7 @@ const BookSection = ({ title, books, textSize, fineAmount, setCurrentPage, setSe
     marginBottom: '24px',
   };
 
-  // allow title and fines to be next
+  // title and fines to be next
   const headerContainerStyle = {
     display: 'flex',
     justifyContent: 'space-between',
@@ -115,7 +114,7 @@ const BookSection = ({ title, books, textSize, fineAmount, setCurrentPage, setSe
     marginTop: '8px',
   };
 
-  // Accept `setUserBookLists`
+  // Accept setUserBookLists
   const renderBookItem = (book, setCurrentPage, setSelectedBook, setUserBookLists, activeBookIds) => {
     let dueDateText; 
     
