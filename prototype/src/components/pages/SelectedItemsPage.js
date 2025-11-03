@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Star, MapPin, X, CheckCircle } from "lucide-react";
+import { Star, MapPin, X, CheckCircle, ChevronLeft } from "lucide-react";
 import { getStyles } from "../../styles/styles";
 import HoldPlacementPopup from "../HoldPlacementButtonPopup";
 
@@ -82,6 +82,10 @@ function Popup({ isOpen, onClose, title, children, textSize = "normal" }) {
 function SelectedItemsPage({
   setCurrentPage,
   textSize = "normal",
+  isLoggedIn,
+  userBookLists,
+  setUserBookLists,
+  id,
   imageUrl = "https://m.media-amazon.com/images/I/41B1HRGxX5L._SY445_SX342_ML2_.jpg",
   title = "The Great Gatsby",
   author = "F. Scott Fitzgerald",
@@ -102,11 +106,7 @@ function SelectedItemsPage({
 
   // Wishlist Popup State
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
-  const [wishlistScreen, setWishlistScreen] = useState("form");
-  const [selectedList, setSelectedList] = useState("My Wishlist");
-
-  const wishlists = ["My Wishlist", "To Read", "Favorites", "Gift Ideas"];
-
+  
   const customStyles = {
     detailsContainer: {
       display: "flex",
@@ -247,6 +247,21 @@ function SelectedItemsPage({
       backgroundColor: "white",
       cursor: "pointer",
     },
+    link: {
+      color: "#2563eb",
+      textDecoration: "none",
+      fontWeight: "500",
+    },
+    linkButton: {
+      background: 'none',
+      border: 'none',
+      padding: 0,
+      color: '#2563eb',
+      textDecoration: 'none',
+      fontWeight: '500',
+      cursor: 'pointer',
+      fontSize: 'inherit',
+    }
   };
 
   const renderStars = (rating) => {
@@ -307,21 +322,114 @@ function SelectedItemsPage({
 
   // Wishlist popup handlers
   const handleAddToWishlist = () => {
-    setWishlistScreen("confirmation");
+    const isAlreadyOnWishlist = userBookLists.wishlist.some(item => item.bookId === id);
+
+    if (isAlreadyOnWishlist) {
+      alert("This item is already in your wishlist.");
+      return; 
+    }
+
+    setUserBookLists(prevLists => ({
+      ...prevLists, 
+      wishlist: [
+        ...prevLists.wishlist, 
+        { bookId: id } 
+      ]
+    }));
+
+    setIsWishlistOpen(true);
   };
 
   const handleCloseWishlist = () => {
     setIsWishlistOpen(false);
-    setTimeout(() => {
-      setWishlistScreen("form");
-    }, 300);
   };
 
-  const isAvailable = availability.toLowerCase() === "available";
+  const handleBack = () => {
+    setCurrentPage("browse");
+  };
+
+  const handlePlaceHoldConfirm = (selectedLocation) => {
+    const isAlreadyOnHold = userBookLists.onHold.some(item => item.bookId === id);
+
+    if (isAlreadyOnHold) {
+      console.log("Item is already on hold.");
+      return; 
+    }
+
+    setUserBookLists(prevLists => ({
+      ...prevLists, 
+      onHold: [
+        ...prevLists.onHold, 
+        { bookId: id, status: 'ready_for_pickup', location: selectedLocation }
+      ]
+    }));
+  };
+  
+  const handlePlaceQueueHold = () => {
+    const isAlreadyOnHold = userBookLists.onHold.some(item => item.bookId === id);
+    if (isAlreadyOnHold) {
+      alert("You are already in the hold queue for this item.");
+      return;
+    }
+    setUserBookLists(prevLists => ({
+      ...prevLists,
+      onHold: [
+        ...prevLists.onHold,
+        { bookId: id, status: 'in_queue' } 
+      ]
+    }));
+    alert("You have been added to the hold queue. You will be notified when it is ready for pickup.");
+  };
+
+  let userStatus;
+  let isOverdue = isLoggedIn && userBookLists.overdue.some(item => item.bookId === id);
+  let isCheckedOut = isLoggedIn && userBookLists.checkedOut.some(item => item.bookId === id);
+  let isOnHold = isLoggedIn && userBookLists.onHold.some(item => item.bookId === id);
+
+  if (isOverdue) {
+    userStatus = "Overdue";
+  } else if (isCheckedOut) {
+    userStatus = "Checked Out";
+  } else if (isOnHold) {
+    userStatus = "On Hold";
+  } else {
+    if (availability.toLowerCase() === "checked out") {
+      userStatus = "Unavailable";
+    } else {
+      userStatus = "Available";
+    }
+  }
+  
+  const isAvailableForHold = userStatus.toLowerCase() === "available";
+  const isUnavailable = userStatus.toLowerCase() === "unavailable";
 
   return (
     <div style={styles.pageContainer}>
       <div style={styles.contentBox(textSize)}>
+        <button
+          onClick={handleBack}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+            fontFamily: "system-ui, sans-serif",
+            fontSize: textSize === "large" ? "16px" : "14px",
+            fontWeight: "500",
+            padding: "8px 12px",
+            borderRadius: "6px",
+            cursor: "pointer",
+            background: "#fff",
+            color: "#374151",
+            border: "1px solid #d1d5db",
+            marginBottom: "20px", 
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = '#f9fafb'}
+          onMouseLeave={(e) => e.currentTarget.style.background = '#fff'}
+        >
+          <ChevronLeft size={textSize === "large" ? 20 : 18} />
+          Back to Search
+        </button>
+
         <div style={customStyles.detailsContainer}>
           {/* Image Section */}
           <div style={customStyles.imageSection}>
@@ -344,19 +452,21 @@ function SelectedItemsPage({
             {/* Rating */}
             <div style={customStyles.ratingContainer}>
               <div style={customStyles.stars}>{renderStars(rating)}</div>
-              <div style={{ fontFamily: "system-ui, sans-serif" }}>
-                <button
-                  onClick={() => setIsRatingOpen(true)}
-                  style={{
-                    ...styles.button(textSize),
-                    width: "auto",
-                    paddingLeft: "24px",
-                    paddingRight: "24px",
-                  }}
-                >
-                  Rate This
-                </button>
-              </div>
+              {isLoggedIn && (
+                <div style={{ fontFamily: "system-ui, sans-serif" }}>
+                  <button
+                    onClick={() => setIsRatingOpen(true)}
+                    style={{
+                      ...styles.button(textSize),
+                      width: "auto",
+                      paddingLeft: "24px",
+                      paddingRight: "24px",
+                    }}
+                  >
+                    Rate This
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Details */}
@@ -383,31 +493,79 @@ function SelectedItemsPage({
 
             <div style={customStyles.detailRow}>
               <span style={customStyles.label}>Availability:</span>
-              <span style={customStyles.availabilityBadge(isAvailable)}>
-                {availability}
+              <span style={customStyles.availabilityBadge(isAvailableForHold)}>
+                {userStatus}
               </span>
             </div>
 
             {/* Action Buttons */}
-            <div style={customStyles.buttonContainer}>
-              <HoldPlacementPopup
-                setCurrentPage={setCurrentPage}
-                textSize={textSize}
-              />
-              <div style={{ fontFamily: "system-ui, sans-serif" }}>
-                <button
-                  onClick={() => setIsWishlistOpen(true)}
-                  style={{
-                    ...styles.button(textSize),
-                    width: "auto",
-                    paddingLeft: "24px",
-                    paddingRight: "24px",
-                  }}
-                >
-                  Add to Wishlist
-                </button>
+            {isLoggedIn ? (
+              <div style={customStyles.buttonContainer}>
+                {isAvailableForHold && (
+                  <HoldPlacementPopup
+                    setCurrentPage={setCurrentPage}
+                    textSize={textSize}
+                    onPlaceHoldConfirm={handlePlaceHoldConfirm} 
+                  />
+                )}
+                
+                {isUnavailable && (
+                  <button
+                    onClick={handlePlaceQueueHold}
+                    style={{
+                      ...styles.button(textSize),
+                      width: "auto",
+                      paddingLeft: "24px",
+                      paddingRight: "24px",
+                    }}
+                  >
+                    Place Hold
+                  </button>
+                )}
+
+                {!isAvailableForHold && !isUnavailable && (
+                  <p style={{
+                    ...customStyles.label, 
+                    color: '#dc2626', 
+                    fontSize: '15px', 
+                    fontWeight: '500',
+                    alignSelf: 'center'
+                  }}>
+                    {userStatus === "On Hold" ? "Already on hold" : "Not available to place on hold"}
+                  </p>
+                )}
+
+                <div style={{ fontFamily: "system-ui, sans-serif" }}>
+                  <button
+                    onClick={handleAddToWishlist}
+                    style={{
+                      ...styles.button(textSize),
+                      width: "auto",
+                      paddingLeft: "24px",
+                      paddingRight: "24px",
+                    }}
+                  >
+                    Add to Wishlist
+                  </button>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div style={{...customStyles.buttonContainer, marginTop: '20px'}}>
+                <p style={{
+                    ...customStyles.label, 
+                    color: '#555', 
+                    fontSize: '16px', 
+                    fontWeight: '500',
+                  }}>
+                  Please <button 
+                           onClick={(e) => { e.preventDefault(); setCurrentPage('login'); }} 
+                           style={customStyles.linkButton}
+                         >
+                           Login
+                         </button> to rate, hold, or add to wishlist.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -488,9 +646,7 @@ function SelectedItemsPage({
       <Popup
         isOpen={isWishlistOpen}
         onClose={handleCloseWishlist}
-        title={
-          wishlistScreen === "form" ? "Add to Wishlist" : "Added to Wishlist"
-        }
+        title="Added to Wishlist"
         textSize={textSize}
       >
         <div style={customStyles.confirmationContainer}>
@@ -503,6 +659,22 @@ function SelectedItemsPage({
           <div style={customStyles.confirmationText}>
             <strong>{title}</strong> has been added to <strong>wishlist</strong>
             !
+            <br />
+            See more details on{" "}
+            <a
+              href="/profile"
+              style={customStyles.link}
+              onClick={(e) => {
+                e.preventDefault();
+                if (setCurrentPage) {
+                  setCurrentPage("profile");
+                  handleCloseWishlist();
+                }
+              }}
+            >
+              Profile
+            </a>
+            .
           </div>
           <button
             style={{

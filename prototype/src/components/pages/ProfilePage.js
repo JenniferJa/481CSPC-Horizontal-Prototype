@@ -1,35 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { getStyles } from '../../styles/styles'; 
+import { findBookById } from '../../database'; 
+import HoldPlacementPopup from '../HoldPlacementButtonPopup'; 
+import { Heart, ChevronDown, ChevronUp } from 'lucide-react';
 
-// Dummy Data
-const mockUserData = {
-  name: 'Matias Campuzano',
-  ucid: '3014436',
-  currentFines: 1000, 
-};
-
-const mockBookLists = {
-  overdue: [
-    { id: 1, title: 'Bird', dueDate: 'Oct 15, 2025' },
-  ],
-  completed: [
-    { id: 3, title: 'Mockingbird' },
-  ],
-  inProgress: [
-    { id: 6, title: 'Dune', status: 'ready_for_pickup', location: 'TFDL' },
-    { id: 7, title: 'Hyperion', status: 'checked_out', dueDate: 'Nov 10, 2025' },
-  ],
-  wishlist: [
-    { id: 8, title: 'Project' }, 
-  ],
-};
-
-
-// Display a list of books under a title
-const BookSection = ({ title, books, textSize, fineAmount }) => { 
+// Pass `textSize` down from the props
+const BookSection = ({ title, books, textSize, fineAmount, setCurrentPage, setSelectedBook, setUserBookLists, activeBookIds }) => { 
   const styles = getStyles(textSize);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const DISPLAY_LIMIT = 2;
 
-  const sectionStyle = {
+    const sectionStyle = {
     width: '100%',
     marginBottom: '24px',
   };
@@ -101,7 +82,7 @@ const BookSection = ({ title, books, textSize, fineAmount }) => {
   };
 
   // Button Logic
-  const showHoldButton = title === 'Completed Books' || title === 'Wishlist'; // true if either section
+  const showHoldButton = title === 'Returned' || title === 'Wishlist'; // true if either section
 
   // style for the small buttons in the list
   const listButtonStyle = {
@@ -119,10 +100,23 @@ const BookSection = ({ title, books, textSize, fineAmount }) => {
     border: 0,
     color: 'white',
   };
+  
+  const toggleButtonStyle = {
+    background: 'none',
+    border: 'none',
+    color: '#0056b3',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    fontSize: '0.9rem',
+    fontWeight: '500',
+    padding: '4px 0',
+    marginTop: '8px',
+  };
 
-  // helper function figures out what to display for a single book
-  const renderBookItem = (book) => {
-    // Declare variable for due date text
+  // Accept `setUserBookLists`
+  const renderBookItem = (book, setCurrentPage, setSelectedBook, setUserBookLists, activeBookIds) => {
     let dueDateText; 
     
     if (book.dueDate) {
@@ -130,32 +124,94 @@ const BookSection = ({ title, books, textSize, fineAmount }) => {
     } else {
       dueDateText = '';
     }
-    // In Progress
-    if (title === 'In Progress') {
+    
+    const handleBookClick = () => {
+      setSelectedBook(book); 
+      setCurrentPage('SelectedItemsPage'); 
+    };
+
+    const bookLinkStyle = {
+        color: '#0056b3',
+        textDecoration: 'none',
+        fontWeight: '500',
+        background: 'none', 
+        border: 'none',
+        padding: 0,
+        cursor: 'pointer',
+        textAlign: 'left', 
+    };
+
+    const titleLink = (
+        <button 
+          onClick={handleBookClick}
+          style={bookLinkStyle}
+          onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
+          onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+        >
+            {book.title}
+        </button>
+    );
+
+    // This function will be called when "Cancel" is clicked
+    const handleCancelHold = () => {
+      setUserBookLists(prevLists => ({
+        ...prevLists, 
+        onHold: prevLists.onHold.filter(item => item.bookId !== book.id)
+      }));
+    };
+    
+    // On Hold 
+    if (title === 'On Hold') {
       if (book.status === 'ready_for_pickup') {
-        return ( // Return title, location, and Cancel button
+        return ( 
           <>
             <span style={listTextStyle}>
-              {book.title}
+              {titleLink}
                 <span style={{ color: "#c31725ff", fontWeight: "bold", marginLeft: "16px"}}>
                   Ready for pick up at {book.location}
                 </span>
             </span>
+            
             <button 
               style={cancelButtonStyle}
-              onClick={() => alert(`Cancelling hold for: ${book.title}`)}
+              onClick={handleCancelHold} 
             >
               Cancel
             </button>
+            
+          </>
+        );
+      } else if (book.status === 'in_queue') {
+        return ( 
+          <>
+            <span style={listTextStyle}>
+              {titleLink}
+                <span style={{ color: "#f39c12", fontWeight: "bold", marginLeft: "16px"}}>
+                  In Queue
+                </span>
+            </span>
+            
+            <button 
+              style={cancelButtonStyle}
+              onClick={handleCancelHold} 
+            >
+              Cancel
+            </button>
+            
           </>
         );
       }
+    }
+    
+
+    // Checked Out 
+    if (title === 'Checked Out') {
       // Check if the book's status is checked_out
       if (book.status === 'checked_out') {
         return (
           <>
           <span style={listTextStyle}>
-            {book.title}
+            {titleLink}
           </span>
           <span style={{ color: '#666' }}>
             {dueDateText}
@@ -164,17 +220,124 @@ const BookSection = ({ title, books, textSize, fineAmount }) => {
         );
       }
     }
-    // Check if this is Completed Books or Wishlist
+
+    // Check if this is Returned Books or Wishlist
     if (showHoldButton) {
+      // This function runs when the popup confirms the hold
+      const handlePlaceHold = (selectedLocation) => {
+        setUserBookLists(prevLists => {
+          // 1. Check if it's already on hold
+          const isAlreadyOnHold = prevLists.onHold.some(item => item.bookId === book.id);
+          if (isAlreadyOnHold) {
+            alert(`${book.title} is already on hold.`);
+            return prevLists;
+          }
+          
+          // 2. Remove the book from 'Wishlist' or 'Returned'
+          const newWishlist = prevLists.wishlist.filter(item => item.bookId !== book.id);
+          const newReturned = prevLists.returned.filter(item => item.bookId !== book.id);
+
+          // 3. Add the book to the 'onHold' list
+          return {
+            ...prevLists,
+            wishlist: newWishlist,
+            returned: newReturned,
+            onHold: [
+              ...prevLists.onHold,
+              { bookId: book.id, status: 'ready_for_pickup', location: selectedLocation }
+            ]
+          };
+        });
+      };
+      
+      const handlePlaceQueueHold = () => {
+        const isAlreadyOnHold = activeBookIds && activeBookIds.has(book.id);
+        if (isAlreadyOnHold) {
+          alert("You are already in the hold queue for this item.");
+          return;
+        }
+        setUserBookLists(prevLists => ({
+          ...prevLists,
+          wishlist: prevLists.wishlist.filter(item => item.bookId !== book.id),
+          returned: prevLists.returned.filter(item => item.bookId !== book.id),
+          onHold: [
+            ...prevLists.onHold,
+            { bookId: book.id, status: 'in_queue' } 
+          ]
+        }));
+        alert("You have been added to the hold queue.");
+      };
+
+      const isBookActive = activeBookIds && activeBookIds.has(book.id);
+      const isGenerallyAvailable = book.availability.toLowerCase() === 'available';
+
+      let placeOnHoldComponent;
+      if (isBookActive) {
+        placeOnHoldComponent = (
+          <span style={{fontSize: '0.8rem', color: '#666', minWidth: '100px', textAlign: 'right', padding: '4px 8px'}}>
+            On Loan
+          </span>
+        );
+      } else if (isGenerallyAvailable) {
+        placeOnHoldComponent = (
+          <HoldPlacementPopup
+            setCurrentPage={setCurrentPage}
+            textSize={textSize}
+            onPlaceHoldConfirm={handlePlaceHold}
+            style={listButtonStyle}
+          />
+        );
+      } else {
+        placeOnHoldComponent = (
+          <button
+            style={listButtonStyle}
+            onClick={handlePlaceQueueHold}
+          >
+            Place Hold
+          </button>
+        );
+      }
+
+
+      if (title === 'Wishlist') {
+        // This function will be called when the Heart is clicked
+        const handleRemoveFromWishlist = () => {
+          setUserBookLists(prevLists => ({
+            ...prevLists,
+            wishlist: prevLists.wishlist.filter(item => item.bookId !== book.id)
+          }));
+        };
+
+        return (
+          <>
+            <span style={{ ...listTextStyle, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {titleLink}
+              <button 
+                onClick={handleRemoveFromWishlist} 
+                title="Remove from Wishlist"
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  cursor: 'pointer', 
+                  padding: 0, 
+                  display: 'flex',
+                  color: '#e63946' // Red color for the heart
+                }}
+              >
+                <Heart size={18} fill="currentColor" />
+              </button>
+            </span>
+            
+            {placeOnHoldComponent}
+          </>
+        );
+      }
+
+      // This will now only apply to 'Returned' books
       return (
         <>
-          <span style={listTextStyle}>{book.title}</span> 
-          <button 
-            style={listButtonStyle}
-            onClick={() => alert(`Placing hold for: ${book.title}`)} 
-          >
-            Place on hold
-          </button>
+          <span style={listTextStyle}>{titleLink}</span>
+          {placeOnHoldComponent}
         </>
       );
     }
@@ -183,7 +346,7 @@ const BookSection = ({ title, books, textSize, fineAmount }) => {
     return (
       <>
       <span style={listTextStyle}>
-        {book.title}
+        {titleLink}
       </span>
       <span style={{ color: '#666' }}>
         {dueDateText}
@@ -191,9 +354,13 @@ const BookSection = ({ title, books, textSize, fineAmount }) => {
       </>
     );
   };
+  
+  const showToggleButton = books.length > DISPLAY_LIMIT;
+  const booksToShow = isExpanded ? books : books.slice(0, DISPLAY_LIMIT);
 
   return (
     <div style={sectionStyle}>
+
       <div style={headerContainerStyle}>
         <h3 style={titleStyle}>{title}</h3>
         {/* Conditionally if fine fineAmount > 0 */}
@@ -213,22 +380,67 @@ const BookSection = ({ title, books, textSize, fineAmount }) => {
       
       {books.length > 0 ? (
         <ul style={listStyle}>
-          {books.map(book => (
+          {booksToShow.map(book => (
             <li key={book.id} style={listItemStyle}>
-              {renderBookItem(book)}
+          
+              {renderBookItem(book, setCurrentPage, setSelectedBook, setUserBookLists, activeBookIds)}
             </li>
           ))}
         </ul>
       ) : (
         <p style={emptyListStyle}>No books in this list.</p>
       )}
+
+      {showToggleButton && (
+        <button
+          style={toggleButtonStyle}
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          <span>{isExpanded ? 'See less' : `See more (${books.length - DISPLAY_LIMIT})`}</span>
+          {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+      )}
     </div>
   );
 };
 
-// ProfilePage Component
-function ProfilePage({ textSize }) {
+// Accept `currentUser`, `userBookLists` and `setUserBookLists` as props
+function ProfilePage({ textSize, setCurrentPage, setSelectedBook, currentUser, userBookLists, setUserBookLists }) {
   const styles = getStyles(textSize);
+
+  //Read from the `userBookLists` prop.
+  const overdueBooks = userBookLists.overdue.map(item => ({
+    ...findBookById(item.bookId), 
+    ...item                       
+  }));
+  
+  const returnedBooks = userBookLists.returned.map(item => ({
+    ...findBookById(item.bookId),
+    ...item
+  }));
+
+  const checkedOutBooks = userBookLists.checkedOut.map(item => ({
+    ...findBookById(item.bookId),
+    ...item 
+  }));
+
+  const onHoldBooks = userBookLists.onHold.map(item => ({
+    ...findBookById(item.bookId),
+    ...item 
+  }));
+
+  const wishlistBooks = userBookLists.wishlist.map(item => ({
+    ...findBookById(item.bookId),
+    ...item
+  }));
+
+  // Create a Set of all active book IDs
+  const activeBookIds = new Set([
+    ...overdueBooks.map(b => b.id),
+    ...checkedOutBooks.map(b => b.id),
+    ...onHoldBooks.map(b => b.id)
+  ]);
+
 
   const localStyles = {
     profileHeader: {
@@ -257,30 +469,56 @@ function ProfilePage({ textSize }) {
       <div style={styles.contentBox(textSize)}>
         <h2 style={{ color: '#666', fontWeight: '500' }}>User Profile</h2>
         <div style={localStyles.profileHeader}>
-          <span style={localStyles.profileName}>{mockUserData.name}</span>
-          <span style={localStyles.profileUCID}>UCID: {mockUserData.ucid}</span>
+          <span style={localStyles.profileName}>{currentUser.name}</span>
+          <span style={localStyles.profileName}>{currentUser.ucid}</span>
         </div>
 
+      
         <BookSection 
-          title="Overdue Books" 
-          books={mockBookLists.overdue} 
-          textSize={textSize} 
-          fineAmount={mockUserData.currentFines} 
+          title="Overdue" 
+          books={overdueBooks} 
+          textSize={textSize} // Pass textSize
+          fineAmount={currentUser.currentFines} 
+          setCurrentPage={setCurrentPage}
+          setSelectedBook={setSelectedBook}
+          setUserBookLists={setUserBookLists}
+        />
+        
+        
+        <BookSection 
+          title="Checked Out" 
+          books={checkedOutBooks} 
+          textSize={textSize} // Pass textSize
+          setCurrentPage={setCurrentPage}
+          setSelectedBook={setSelectedBook}
+          setUserBookLists={setUserBookLists}
         />
         <BookSection 
-          title="In Progress" 
-          books={mockBookLists.inProgress} 
-          textSize={textSize} 
+          title="On Hold" 
+          books={onHoldBooks} 
+          textSize={textSize} // Pass textSize
+          setCurrentPage={setCurrentPage}
+          setSelectedBook={setSelectedBook}
+          setUserBookLists={setUserBookLists}
         />
+        
         <BookSection 
           title="Wishlist" 
-          books={mockBookLists.wishlist} 
-          textSize={textSize} 
+          books={wishlistBooks} 
+          textSize={textSize} // Pass textSize
+          setCurrentPage={setCurrentPage}
+          setSelectedBook={setSelectedBook}
+          setUserBookLists={setUserBookLists}
+          activeBookIds={activeBookIds} // Pass the active IDs
         />
         <BookSection 
-          title="Completed Books" 
-          books={mockBookLists.completed} 
-          textSize={textSize} 
+          title="Returned" 
+          books={returnedBooks} 
+          textSize={textSize} // Pass textSize
+          setCurrentPage={setCurrentPage}
+          setSelectedBook={setSelectedBook}
+          setUserBookLists={setUserBookLists}
+          activeBookIds={activeBookIds} // Pass the active IDs
         />
       </div>
     </div>

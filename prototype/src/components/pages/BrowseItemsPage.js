@@ -1,48 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Mic, ChevronLeft, ChevronRight } from "lucide-react";
 import { styles } from "../../styles/styles";
+import { books } from "../../database";
 
-function BrowseItemsPage({ setCurrentPage, setSelectedBook }) {
-  
-
-  // Dataset i made
-  const books = [
-    { id: 1, imageUrl: "https://covers.openlibrary.org/b/isbn/0451524934-L.jpg", title: "1984", author: "George Orwell", rating: 4, mediaType: "Book", availability: "Available", location: "TFDL", language: "English", addedDate: "1949-06-08" },
-    { id: 2, imageUrl: "https://covers.openlibrary.org/b/isbn/0060850523-L.jpg", title: "Brave New World", author: "Aldous Huxley", rating: 1, mediaType: "Ebook", availability: "Checked Out", location: "Location 1", language: "English", addedDate: "1932-08-18" },
-    { id: 3, imageUrl: "https://covers.openlibrary.org/b/isbn/9780451419439-L.jpg", title: "Les Misérables", author: "Victor Hugo", rating: 3, mediaType: "Audiobook", availability: "Available", location: "Location 2", language: "French", addedDate: "1862-04-03" },
-    { id: 4, imageUrl: "https://covers.openlibrary.org/b/isbn/0743273567-L.jpg", title: "The Great Gatsby", author: "F. Scott Fitzgerald", rating: 5, mediaType: "Book", availability: "Available", location: "TFDL", language: "English", addedDate: "1925-04-10" },
-    { id: 5, imageUrl: "https://covers.openlibrary.org/b/isbn/9780061120084-L.jpg", title: "To Kill a Mockingbird", author: "Harper Lee", rating: 4, mediaType: "Ebook", availability: "Checked Out", location: "Location 1", language: "English", addedDate: "1960-07-11" },
-    { id: 6, imageUrl: "https://covers.openlibrary.org/b/isbn/9780156027328-L.jpg", title: "Life of Pi", author: "Yann Martel", rating: 3, mediaType: "Book", availability: "Available", location: "Location 2", language: "English", addedDate: "2001-09-11" },
-    { id: 7, imageUrl: "https://covers.openlibrary.org/b/isbn/0316769487-L.jpg", title: "The Catcher in the Rye", author: "J.D. Salinger", rating: 2, mediaType: "Audiobook", availability: "Available", location: "TFDL", language: "English", addedDate: "1951-07-16" },
-    { id: 8, imageUrl: "https://covers.openlibrary.org/b/isbn/9780399501487-L.jpg", title: "Lord of the Flies", author: "William Golding", rating: 3, mediaType: "Ebook", availability: "Available", location: "Location 2", language: "English", addedDate: "1954-09-17" },
-    { id: 9, imageUrl: "https://covers.openlibrary.org/b/isbn/0451526341-L.jpg", title: "Animal Farm", author: "George Orwell", rating: 5, mediaType: "Book", availability: "Checked Out", location: "TFDL", language: "English", addedDate: "1945-08-17" },
-    { id: 10, imageUrl: "https://covers.openlibrary.org/b/isbn/9780486284736-L.jpg", title: "Pride and Prejudice", author: "Jane Austen", rating: 5, mediaType: "Ebook", availability: "Available", location: "Location 1", language: "English", addedDate: "1813-01-28" },
-    { id: 11, imageUrl: "https://covers.openlibrary.org/b/isbn/9780156012195-L.jpg", title: "Le Petit Prince", author: "Antoine de Saint-Exupéry", rating: 4, mediaType: "Book", availability: "Available", location: "TFDL", language: "French", addedDate: "1943-04-06" },
-    { id: 12, imageUrl: "https://covers.openlibrary.org/b/isbn/9780747532743-L.jpg", title: "Harry Potter and the Philosopher’s Stone", author: "J.K. Rowling", rating: 5, mediaType: "Audiobook", availability: "Available", location: "Location 2", language: "English", addedDate: "1997-06-26" },
-    { id: 13, imageUrl: "https://covers.openlibrary.org/b/isbn/9780486278070-L.jpg", title: "The Picture of Dorian Gray", author: "Oscar Wilde", rating: 5, mediaType: "Book", availability: "Checked Out", location: "TFDL", language: "English", addedDate: "1890-07-01" },
-    { id: 14, imageUrl: "https://covers.openlibrary.org/b/isbn/9780679732761-L.jpg", title: "The Alchemist", author: "Paulo Coelho", rating: 3, mediaType: "Ebook", availability: "Available", location: "Location 1", language: "English", addedDate: "1988-04-01" },
-    { id: 15, imageUrl: "https://covers.openlibrary.org/b/isbn/9782253006329-L.jpg", title: "Vingt Mille Lieues Sous La Mer", author: "Jules Verne", rating: 2, mediaType: "Audiobook", availability: "Checked Out", location: "Location 2", language: "French", addedDate: "1869-11-17" },
-    { id: 16, imageUrl: "https://covers.openlibrary.org/b/isbn/9780385490818-L.jpg", title: "The Handmaid’s Shadow", author: "Margaret Dunn", rating: 5, mediaType: "Book", availability: "Available", location: "TFDL", language: "English", addedDate: "2001-05-15" },
-    { id: 17, imageUrl: "https://covers.openlibrary.org/b/isbn/9780062316110-L.jpg", title: "Ready Player One", author: "Ernest Cline", rating: 4, mediaType: "Ebook", availability: "Available", location: "Location 1", language: "English", addedDate: "2011-08-16" },
-    { id: 18, imageUrl: "https://covers.openlibrary.org/b/isbn/9780140447422-L.jpg", title: "Germinal", author: "Émile Zola", rating: 5, mediaType: "Book", availability: "Available", location: "Location 2", language: "French", addedDate: "1885-03-25" },
-    { id: 19, imageUrl: "https://covers.openlibrary.org/b/isbn/9780439023528-L.jpg", title: "The Hunger Games", author: "Suzanne Collins", rating: 4, mediaType: "Audiobook", availability: "Checked Out", location: "TFDL", language: "English", addedDate: "2008-09-14" },
-    { id: 20, imageUrl: "https://covers.openlibrary.org/b/isbn/9780141187761-L.jpg", title: "A Farewell to Arms", author: "Ernest Hemingway", rating: 3, mediaType: "Book", availability: "Available", location: "Location 1", language: "English", addedDate: "1929-09-27" },
-    { id: 21, imageUrl: "https://covers.openlibrary.org/b/isbn/9780307387899-L.jpg", title: "The Road", author: "Cormac McCarthy", rating: 4, mediaType: "Ebook", availability: "Available", location: "Location 2", language: "English", addedDate: "2006-09-26" },
-    { id: 22, imageUrl: "https://covers.openlibrary.org/b/isbn/9780140449266-L.jpg", title: "The Count of Monte Cristo", author: "Alexandre Dumas", rating: 5, mediaType: "Book", availability: "Available", location: "TFDL", language: "English", addedDate: "1846-06-20" },
-    { id: 23, imageUrl: "https://covers.openlibrary.org/b/isbn/9780140283334-L.jpg", title: "Lord of the Flies", author: "William Golding", rating: 2, mediaType: "Ebook", availability: "Checked Out", location: "Location 1", language: "English", addedDate: "1954-09-17" },
-    { id: 24, imageUrl: "https://covers.openlibrary.org/b/isbn/9780486266893-L.jpg", title: "Candide", author: "Voltaire", rating: 5, mediaType: "Book", availability: "Available", location: "Location 2", language: "French", addedDate: "1759-01-01" },
-    { id: 25, imageUrl: "https://covers.openlibrary.org/b/isbn/9780385504201-L.jpg", title: "The Da Vinci Code", author: "Dan Brown", rating: 4, mediaType: "Ebook", availability: "Available", location: "TFDL", language: "English", addedDate: "2003-03-18" },
-    { id: 26, imageUrl: "https://covers.openlibrary.org/b/isbn/9780439139595-L.jpg", title: "Harry Potter and the Goblet of Fire", author: "J.K. Rowling", rating: 5, mediaType: "Book", availability: "Checked Out", location: "Location 1", language: "English", addedDate: "2000-07-08" },
-    { id: 28, imageUrl: "https://covers.openlibrary.org/b/isbn/9782070360024-L.jpg", title: "L'étranger", author: "Albert Camus", rating: 4, mediaType: "Ebook", availability: "Available", location: "TFDL", language: "French", addedDate: "1942-04-16" },
-    { id: 29, imageUrl: "https://covers.openlibrary.org/b/isbn/9780060883287-L.jpg", title: "One Hundred Years of Solitude", author: "Gabriel García Márquez", rating: 5, mediaType: "Book", availability: "Checked Out", location: "Location 1", language: "English", addedDate: "1967-05-30" },
-    { id: 30, imageUrl: "https://covers.openlibrary.org/b/isbn/9780143039433-L.jpg", title: "The Grapes of Wrath", author: "John Stejnbeck", rating: 3, mediaType: "Ebook", availability: "Available", location: "Location 2", language: "English", addedDate: "2007-05-03" },
-    { id: 31, imageUrl: "https://covers.openlibrary.org/b/isbn/9781594480003-L.jpg", title: "The Kite Runner", author: "Khaled Hosseini", rating: 5, mediaType: "Book", availability: "Available", location: "TFDL", language: "English", addedDate: "2003-06-01" },
-    { id: 32, imageUrl: "https://covers.openlibrary.org/b/isbn/9780141187761-L.jpg", title: "For Whom the Bell Tolls", author: "Ernest Hemingway", rating: 4, mediaType: "Ebook", availability: "Checked Out", location: "Location 1", language: "English", addedDate: "1940-10-21" },
-    { id: 33, imageUrl: "https://covers.openlibrary.org/b/isbn/9780679735779-L.jpg", title: "American Psycho", author: "Bret Easton Ellis", rating: 2, mediaType: "Audiobook", availability: "Available", location: "Location 2", language: "English", addedDate: "1991-04-29" },
-    { id: 34, imageUrl: "https://covers.openlibrary.org/b/isbn/9782070413119-L.jpg", title: "Madame Bovary", author: "Gustave Flaubert", rating: 5, mediaType: "Book", availability: "Available", location: "TFDL", language: "French", addedDate: "1856-04-15" },
-    { id: 35, imageUrl: "https://covers.openlibrary.org/b/isbn/9780062315007-L.jpg", title: "Sapiens: A Brief History of Humankind", author: "Yuval Noah Harari", rating: 3, mediaType: "Ebook", availability: "Available", location: "Location 1", language: "English", addedDate: "2011-09-04" },
-  ];
-
+function BrowseItemsPage({ setCurrentPage, setSelectedBook }) {  
   // State / Variables decarlation
   const [searchTerm, setSearchTerm] = useState("");
   
