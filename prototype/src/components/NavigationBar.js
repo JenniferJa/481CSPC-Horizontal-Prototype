@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ALargeSmall, User } from 'lucide-react';
+import { ALargeSmall, User, LogIn, LogOut } from 'lucide-react';
 import { getStyles } from '../styles/styles';
 
-function NavigationBar({ currentPage, setCurrentPage, textSize, setTextSize }) {
+function NavigationBar({ currentPage, setCurrentPage, textSize, setTextSize, isLoggedIn, handleLogout }) {
   const styles = getStyles(textSize);
 
   const [isSmallScreen, setIsSmallScreen] = useState(false);
@@ -61,13 +61,33 @@ function NavigationBar({ currentPage, setCurrentPage, textSize, setTextSize }) {
           >
             <ALargeSmall size={20} />
           </button>
-          <button
-            style={styles.profileButton}
-            onClick={() => setCurrentPage('profile')}
-          >
-            <User size={20} />
-            Profile
-          </button>
+
+          {isLoggedIn ? (
+            <>
+              <button
+                style={styles.profileButton}
+                onClick={() => setCurrentPage('profile')}
+              >
+                <User size={20} />
+                Profile
+              </button>
+              <button
+                style={{...styles.profileButton, background: '#f8f9fa', color: '#333'}}
+                onClick={handleLogout}
+              >
+                <LogOut size={20} />
+                Logout
+              </button>
+            </>
+          ) : (
+            <button
+              style={styles.profileButton}
+              onClick={() => setCurrentPage('login')}
+            >
+              <LogIn size={20} />
+              Login
+            </button>
+          )}
         </div>
       </div>
     </nav>

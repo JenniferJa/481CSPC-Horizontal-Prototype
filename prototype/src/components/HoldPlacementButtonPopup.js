@@ -129,9 +129,9 @@ function Popup({ isOpen, onClose, title, children, textSize = "normal" }) {
   );
 }
 
-function HoldPlacementPopup({ setCurrentPage, textSize = "normal" }) {
+function HoldPlacementPopup({ setCurrentPage, textSize = "normal", onPlaceHoldConfirm, style }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [screen, setScreen] = useState("form"); // 'form' or 'confirmation'
+  const [screen, setScreen] = useState("form"); 
   const [selectedLocation, setSelectedLocation] = useState("TFDL");
 
   const styles = getStyles(textSize);
@@ -149,33 +149,37 @@ function HoldPlacementPopup({ setCurrentPage, textSize = "normal" }) {
   };
 
   const handlePlaceHold = () => {
+    if (onPlaceHoldConfirm) {
+      onPlaceHoldConfirm(selectedLocation);
+    }
     setScreen("confirmation");
   };
 
   const handleClose = () => {
     setIsOpen(false);
-    // Reset to form screen after a short delay
     setTimeout(() => {
       setScreen("form");
     }, 300);
   };
 
   const getTitle = () => {
-    return screen === "form" ? "Place on Hold" : "Hold was Placed";
+    return screen === "form" ? "Place Hold" : "Hold was Placed";
+  };
+  
+  const defaultStyle = {
+    ...styles.button(textSize),
+    width: "auto",
+    paddingLeft: "24px",
+    paddingRight: "24px",
   };
 
   return (
     <div style={{ fontFamily: "system-ui, sans-serif" }}>
       <button
         onClick={() => setIsOpen(true)}
-        style={{
-          ...styles.button(textSize),
-          width: "auto",
-          paddingLeft: "24px",
-          paddingRight: "24px",
-        }}
+        style={style ? style : defaultStyle}
       >
-        Place on Hold
+        Place Hold
       </button>
 
       <Popup
