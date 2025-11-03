@@ -38,7 +38,7 @@ function LoginPage({ onLogin, textSize }) {
       fontSize: '16px',
       border: '1px solid #d1d5db',
       borderRadius: '6px',
-      boxSizing: 'border-box', // Fixes width issue
+      boxSizing: 'border-box', 
     },
     button: {
       ...styles.button(textSize),
@@ -60,7 +60,6 @@ function LoginPage({ onLogin, textSize }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // onLogin is the function passed down from App.js
     const loginSuccess = onLogin(email, password);
     if (!loginSuccess) {
       setError('Invalid email or password. Please try again.');
