@@ -274,7 +274,7 @@ const BookSection = ({ title, books, textSize, fineAmount, setCurrentPage, setSe
       if (isBookActive) {
         placeOnHoldComponent = (
           <span style={{fontSize: '0.8rem', color: '#666', minWidth: '100px', textAlign: 'right', padding: '4px 8px'}}>
-            On Loan
+            On Hold
           </span>
         );
       } else if (isGenerallyAvailable) {
