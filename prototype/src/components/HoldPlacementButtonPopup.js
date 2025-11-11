@@ -129,14 +129,36 @@ function Popup({ isOpen, onClose, title, children, textSize = "normal" }) {
   );
 }
 
-function HoldPlacementPopup({ setCurrentPage, textSize = "normal", onPlaceHoldConfirm, style }) {
+function HoldPlacementPopup({
+  setCurrentPage,
+  textSize = "normal",
+  onPlaceHoldConfirm,
+  style,
+}) {
   const [isOpen, setIsOpen] = useState(false);
-  const [screen, setScreen] = useState("form"); 
+  const [screen, setScreen] = useState("form");
   const [selectedLocation, setSelectedLocation] = useState("TFDL");
 
   const styles = getStyles(textSize);
 
   const locations = ["TFDL", "Location 2", "Location 3"];
+  const locationInfo = {
+    TFDL: {
+      address: "Taylor Family Digital Library, 410 University Ct NW, Calgary",
+      mapUrl:
+        "https://www.google.com/maps/place/Taylor+Family+Digital+Library,+410+University+Ct+NW,+Calgary,+AB+T2N+1N4/@51.0774396,-114.1297798,17z/data=!3m1!4b1!4m6!3m5!1s0x53716f091a059567:0x7677e66c5926e4a2!8m2!3d51.0774396!4d-114.1297798!16s%2Fg%2F11b8vdr8w_?entry=ttu&g_ep=EgoyMDI1MTEwNS4wIKXMDSoASAFQAw%3D%3D",
+    },
+    "Location 2": {
+      address: "123 Example St, Calgary",
+      mapUrl:
+        "https://www.google.com/maps/search/?api=1&query=123+Example+St+Calgary",
+    },
+    "Location 3": {
+      address: "456 Another Rd, Calgary",
+      mapUrl:
+        "https://www.google.com/maps/search/?api=1&query=456+Another+Rd+Calgary",
+    },
+  };
 
   const getPickupDate = () => {
     const date = new Date();
@@ -165,7 +187,7 @@ function HoldPlacementPopup({ setCurrentPage, textSize = "normal", onPlaceHoldCo
   const getTitle = () => {
     return screen === "form" ? "Place Hold" : "Hold was Placed";
   };
-  
+
   const defaultStyle = {
     ...styles.button(textSize),
     width: "auto",
@@ -206,6 +228,33 @@ function HoldPlacementPopup({ setCurrentPage, textSize = "normal", onPlaceHoldCo
                   </option>
                 ))}
               </select>
+              <div style={{ marginTop: "10px" }}>
+                <div
+                  style={{
+                    fontSize: "14px",
+                    color: "#374151",
+                    marginBottom: "6px",
+                  }}
+                >
+                  {locationInfo[selectedLocation].address}
+                </div>
+                <button
+                  onClick={() =>
+                    window.open(locationInfo[selectedLocation].mapUrl, "_blank")
+                  }
+                  style={{
+                    fontSize: "14px",
+                    color: "#2563eb",
+                    textDecoration: "underline",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: 0,
+                  }}
+                >
+                  View on Map
+                </button>
+              </div>
             </div>
             <div style={{ display: "flex", justifyContent: "center" }}>
               <button

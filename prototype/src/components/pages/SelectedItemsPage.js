@@ -98,6 +98,24 @@ function SelectedItemsPage({
 }) {
   const styles = getStyles(textSize);
 
+  const locationInfo = {
+    TFDL: {
+      address: "Taylor Family Digital Library, 410 University Ct NW, Calgary",
+      mapUrl:
+        "https://www.google.com/maps/search/?api=1&query=Taylor+Family+Digital+Library+Calgary",
+    },
+    "Location 2": {
+      address: "123 Example St, Calgary",
+      mapUrl:
+        "https://www.google.com/maps/search/?api=1&query=123+Example+St+Calgary",
+    },
+    "Location 3": {
+      address: "456 Another Rd, Calgary",
+      mapUrl:
+        "https://www.google.com/maps/search/?api=1&query=456+Another+Rd+Calgary",
+    },
+  };
+
   // Rating Popup State
   const [isRatingOpen, setIsRatingOpen] = useState(false);
   const [ratingScreen, setRatingScreen] = useState("rating");
@@ -106,7 +124,7 @@ function SelectedItemsPage({
 
   // Wishlist Popup State
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
-  
+
   const customStyles = {
     detailsContainer: {
       display: "flex",
@@ -253,15 +271,15 @@ function SelectedItemsPage({
       fontWeight: "500",
     },
     linkButton: {
-      background: 'none',
-      border: 'none',
+      background: "none",
+      border: "none",
       padding: 0,
-      color: '#2563eb',
-      textDecoration: 'none',
-      fontWeight: '500',
-      cursor: 'pointer',
-      fontSize: 'inherit',
-    }
+      color: "#2563eb",
+      textDecoration: "none",
+      fontWeight: "500",
+      cursor: "pointer",
+      fontSize: "inherit",
+    },
   };
 
   const renderStars = (rating) => {
@@ -322,19 +340,18 @@ function SelectedItemsPage({
 
   // Wishlist popup handlers
   const handleAddToWishlist = () => {
-    const isAlreadyOnWishlist = userBookLists.wishlist.some(item => item.bookId === id);
+    const isAlreadyOnWishlist = userBookLists.wishlist.some(
+      (item) => item.bookId === id
+    );
 
     if (isAlreadyOnWishlist) {
       alert("This item is already in your wishlist.");
-      return; 
+      return;
     }
 
-    setUserBookLists(prevLists => ({
-      ...prevLists, 
-      wishlist: [
-        ...prevLists.wishlist, 
-        { bookId: id } 
-      ]
+    setUserBookLists((prevLists) => ({
+      ...prevLists,
+      wishlist: [...prevLists.wishlist, { bookId: id }],
     }));
 
     setIsWishlistOpen(true);
@@ -349,42 +366,48 @@ function SelectedItemsPage({
   };
 
   const handlePlaceHoldConfirm = (selectedLocation) => {
-    const isAlreadyOnHold = userBookLists.onHold.some(item => item.bookId === id);
+    const isAlreadyOnHold = userBookLists.onHold.some(
+      (item) => item.bookId === id
+    );
 
     if (isAlreadyOnHold) {
       console.log("Item is already on hold.");
-      return; 
+      return;
     }
 
-    setUserBookLists(prevLists => ({
-      ...prevLists, 
+    setUserBookLists((prevLists) => ({
+      ...prevLists,
       onHold: [
-        ...prevLists.onHold, 
-        { bookId: id, status: 'ready_for_pickup', location: selectedLocation }
-      ]
+        ...prevLists.onHold,
+        { bookId: id, status: "ready_for_pickup", location: selectedLocation },
+      ],
     }));
   };
-  
+
   const handlePlaceQueueHold = () => {
-    const isAlreadyOnHold = userBookLists.onHold.some(item => item.bookId === id);
+    const isAlreadyOnHold = userBookLists.onHold.some(
+      (item) => item.bookId === id
+    );
     if (isAlreadyOnHold) {
       alert("You are already in the hold queue for this item.");
       return;
     }
-    setUserBookLists(prevLists => ({
+    setUserBookLists((prevLists) => ({
       ...prevLists,
-      onHold: [
-        ...prevLists.onHold,
-        { bookId: id, status: 'in_queue' } 
-      ]
+      onHold: [...prevLists.onHold, { bookId: id, status: "in_queue" }],
     }));
-    alert("You have been added to the hold queue. You will be notified when it is ready for pickup.");
+    alert(
+      "You have been added to the hold queue. You will be notified when it is ready for pickup."
+    );
   };
 
   let userStatus;
-  let isOverdue = isLoggedIn && userBookLists.overdue.some(item => item.bookId === id);
-  let isCheckedOut = isLoggedIn && userBookLists.checkedOut.some(item => item.bookId === id);
-  let isOnHold = isLoggedIn && userBookLists.onHold.some(item => item.bookId === id);
+  let isOverdue =
+    isLoggedIn && userBookLists.overdue.some((item) => item.bookId === id);
+  let isCheckedOut =
+    isLoggedIn && userBookLists.checkedOut.some((item) => item.bookId === id);
+  let isOnHold =
+    isLoggedIn && userBookLists.onHold.some((item) => item.bookId === id);
 
   if (isOverdue) {
     userStatus = "Overdue";
@@ -399,7 +422,7 @@ function SelectedItemsPage({
       userStatus = "Available";
     }
   }
-  
+
   const isAvailableForHold = userStatus.toLowerCase() === "available";
   const isUnavailable = userStatus.toLowerCase() === "unavailable";
 
@@ -421,10 +444,10 @@ function SelectedItemsPage({
             background: "#fff",
             color: "#374151",
             border: "1px solid #d1d5db",
-            marginBottom: "20px", 
+            marginBottom: "20px",
           }}
-          onMouseEnter={(e) => e.currentTarget.style.background = '#f9fafb'}
-          onMouseLeave={(e) => e.currentTarget.style.background = '#fff'}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "#f9fafb")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
         >
           <ChevronLeft size={textSize === "large" ? 20 : 18} />
           Back to Search
@@ -487,7 +510,23 @@ function SelectedItemsPage({
                   size={16}
                   style={{ display: "inline", marginRight: "5px" }}
                 />
-                {location}
+
+                <button
+                  onClick={() =>
+                    window.open(locationInfo[location]?.mapUrl, "_blank")
+                  }
+                  style={{
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                    color: "#2563eb",
+                    textDecoration: "underline",
+                    font: "inherit",
+                  }}
+                >
+                  {location}
+                </button>
               </span>
             </div>
 
@@ -505,10 +544,10 @@ function SelectedItemsPage({
                   <HoldPlacementPopup
                     setCurrentPage={setCurrentPage}
                     textSize={textSize}
-                    onPlaceHoldConfirm={handlePlaceHoldConfirm} 
+                    onPlaceHoldConfirm={handlePlaceHoldConfirm}
                   />
                 )}
-                
+
                 {isUnavailable && (
                   <button
                     onClick={handlePlaceQueueHold}
@@ -524,14 +563,18 @@ function SelectedItemsPage({
                 )}
 
                 {!isAvailableForHold && !isUnavailable && (
-                  <p style={{
-                    ...customStyles.label, 
-                    color: '#dc2626', 
-                    fontSize: '15px', 
-                    fontWeight: '500',
-                    alignSelf: 'center'
-                  }}>
-                    {userStatus === "On Hold" ? "Already on hold" : "Not available to place on hold"}
+                  <p
+                    style={{
+                      ...customStyles.label,
+                      color: "#dc2626",
+                      fontSize: "15px",
+                      fontWeight: "500",
+                      alignSelf: "center",
+                    }}
+                  >
+                    {userStatus === "On Hold"
+                      ? "Already on hold"
+                      : "Not available to place on hold"}
                   </p>
                 )}
 
@@ -550,19 +593,28 @@ function SelectedItemsPage({
                 </div>
               </div>
             ) : (
-              <div style={{...customStyles.buttonContainer, marginTop: '20px'}}>
-                <p style={{
-                    ...customStyles.label, 
-                    color: '#555', 
-                    fontSize: '16px', 
-                    fontWeight: '500',
-                  }}>
-                  Please <button 
-                           onClick={(e) => { e.preventDefault(); setCurrentPage('login'); }} 
-                           style={customStyles.linkButton}
-                         >
-                           Login
-                         </button> to rate, hold, or add to wishlist.
+              <div
+                style={{ ...customStyles.buttonContainer, marginTop: "20px" }}
+              >
+                <p
+                  style={{
+                    ...customStyles.label,
+                    color: "#555",
+                    fontSize: "16px",
+                    fontWeight: "500",
+                  }}
+                >
+                  Please{" "}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentPage("login");
+                    }}
+                    style={customStyles.linkButton}
+                  >
+                    Login
+                  </button>{" "}
+                  to rate, hold, or add to wishlist.
                 </p>
               </div>
             )}
