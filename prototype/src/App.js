@@ -10,26 +10,26 @@ import SelectedItemsPage from "./components/pages/SelectedItemsPage";
 
 const initialBookLists = {
   overdue: [
-    { bookId: 1, dueDate: 'Oct 15, 2025' }, 
+    { bookId: 1, dueDate: 'Oct 15, 2025' },
   ],
   returned: [
-    { bookId: 5 }, 
+    { bookId: 5 },
   ],
   checkedOut: [
-    { bookId: 9, status: 'checked_out', dueDate: 'Nov 10, 2025' }, 
+    { bookId: 9, status: 'checked_out', dueDate: 'Nov 10, 2025' },
   ],
   onHold: [
-    { bookId: 4, status: 'ready_for_pickup', location: 'TFDL' }, 
+    { bookId: 4, status: 'ready_for_pickup', location: 'TFDL' },
   ],
   wishlist: [
-    { bookId: 31 }, 
+    { bookId: 31 },
   ],
 };
 
 const mockUserData = {
   name: 'Matias Campuzano',
   ucid: '3014436',
-  currentFines: 1000, 
+  currentFines: 1000,
 };
 
 function App() {
@@ -47,23 +47,23 @@ function App() {
       setIsLoggedIn(true);
       setCurrentUser(mockUserData);
       setUserBookLists(initialBookLists);
-      setCurrentPage('home'); 
+      setCurrentPage('home');
       return true;
     }
-    return false; 
+    return false;
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
     setCurrentUser(null);
-    setUserBookLists({ 
+    setUserBookLists({
       overdue: [],
       returned: [],
       checkedOut: [],
       onHold: [],
       wishlist: [],
     });
-    setCurrentPage('home'); 
+    setCurrentPage('home');
   };
 
   const renderPage = () => {
@@ -80,13 +80,20 @@ function App() {
         );
       case "login":
         return <LoginPage onLogin={handleLogin} textSize={textSize} />;
-      
-      case "tinder":
-        if (!isLoggedIn) {
-          return <LoginPage onLogin={handleLogin} textSize={textSize} />;
-        }
-        return <BookTinderPage textSize={textSize} />;
-      
+
+    case "tinder":
+      if (!isLoggedIn) {
+        return <LoginPage onLogin={handleLogin} textSize={textSize} />;
+      }
+      return (
+        <BookTinderPage
+          textSize={textSize}
+          isLoggedIn={isLoggedIn}
+          userBookLists={userBookLists}
+          setUserBookLists={setUserBookLists}
+        />
+      );
+
       case "profile":
         if (!isLoggedIn) {
           return <LoginPage onLogin={handleLogin} textSize={textSize} />;
@@ -94,7 +101,7 @@ function App() {
         return (
           <ProfilePage
             textSize={textSize}
-            currentUser={currentUser} 
+            currentUser={currentUser}
             userBookLists={userBookLists}
             setUserBookLists={setUserBookLists}
             setCurrentPage={setCurrentPage}
@@ -105,9 +112,9 @@ function App() {
         return (
           <SelectedItemsPage
             textSize={textSize}
-            isLoggedIn={isLoggedIn} 
+            isLoggedIn={isLoggedIn}
             setCurrentPage={setCurrentPage}
-            {...selectedBook} 
+            {...selectedBook}
             userBookLists={userBookLists}
             setUserBookLists={setUserBookLists}
           />
