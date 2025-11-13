@@ -3,26 +3,31 @@ import { Mic, ChevronLeft, ChevronRight } from "lucide-react";
 import { styles } from "../../styles/styles";
 import { books } from "../../database";
 
-function BrowseItemsPage({ setCurrentPage, setSelectedBook }) {  
+function BrowseItemsPage({
+  setCurrentPage,
+  setSelectedBook,
+  globalSearchTerm,
+  setGlobalSearchTerm,
+}) {
   // State / Variables decarlation
-  const [searchTerm, setSearchTerm] = useState("");
-  
-  // Filter states 
+  const [searchTerm, setSearchTerm] = useState(globalSearchTerm || ""); //globalSearchTerm is created so that user can search from home page
+
+  // Filter states
   const [mediaType, setMediaType] = useState("all");
   const [availability, setAvailability] = useState("all");
   const [language, setLanguage] = useState("all");
   const [location, setLocation] = useState("all");
-  
+
   // Sort state
   const [sortBy, setSortBy] = useState("title");
-  
+
   // Rating filters
   const [minRating, setMinRating] = useState(0);
-  
+
   // Date range filter
   const [yearFrom, setYearFrom] = useState("");
   const [yearTo, setYearTo] = useState("");
-  
+
   // Book page states
   const [page, setPage] = useState(1);
   const booksPerPage = 15; // Number of books to display per page
@@ -30,22 +35,22 @@ function BrowseItemsPage({ setCurrentPage, setSelectedBook }) {
   //Filteed books based off the filters
   const filteredBooks = books
     .filter((book) => {
-      // Search filter 
+      // Search filter
       const matchesSearch =
         book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         book.author.toLowerCase().includes(searchTerm.toLowerCase());
 
-      // Availability filter it shows all if all of them are currently selected  
+      // Availability filter it shows all if all of them are currently selected
       const matchesAvailability =
         availability === "all" ||
         book.availability.toLowerCase() === availability.toLowerCase();
 
-      // Language filter 
+      // Language filter
       const matchesLanguage =
         language === "all" ||
         book.language.toLowerCase() === language.toLowerCase();
 
-      // Location filter 
+      // Location filter
       const matchesLocation =
         location === "all" ||
         book.location.toLowerCase() === location.toLowerCase();
@@ -58,7 +63,7 @@ function BrowseItemsPage({ setCurrentPage, setSelectedBook }) {
       // Rating filter
       const matchesRating = book.rating >= minRating;
 
-      // Date range filter 
+      // Date range filter
       const bookYear = new Date(book.addedDate).getFullYear();
       const fromYear = yearFrom ? parseInt(yearFrom) : null;
       const toYear = yearTo ? parseInt(yearTo) : null;
@@ -76,21 +81,21 @@ function BrowseItemsPage({ setCurrentPage, setSelectedBook }) {
         matchesYear
       );
     })
-    
+
     // Sort the filtered books based on user's selection
 
     .sort((a, b) => {
-      // Sort by title ascending 
+      // Sort by title ascending
       if (sortBy === "title") return a.title.localeCompare(b.title);
-      // Sort by title descending 
+      // Sort by title descending
       if (sortBy === "titleDes") return b.title.localeCompare(a.title);
-      // Sort by author ascending 
+      // Sort by author ascending
       if (sortBy === "author") return a.author.localeCompare(b.author);
-      // Sort by author descending 
+      // Sort by author descending
       if (sortBy === "authorDes") return b.author.localeCompare(a.author);
       // Sort by rating descending
       if (sortBy === "rating") return b.rating - a.rating;
-      // Sort by rating ascending 
+      // Sort by rating ascending
       if (sortBy === "ratingAsc") return a.rating - b.rating;
       return 0;
     });
@@ -100,22 +105,20 @@ function BrowseItemsPage({ setCurrentPage, setSelectedBook }) {
     setCurrentPage("SelectedItemsPage");
   };
 
-  
   // Logic for the indexs of pages and amount of books on each page
   const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
-  
+
   const startIndex = (page - 1) * booksPerPage;
   const endIndex = startIndex + booksPerPage;
-  
+
   const paginatedBooks = filteredBooks.slice(startIndex, endIndex);
 
- // Sets logic for moving between apges
+  // Sets logic for moving between apges
   const handlePreviousPage = () => {
     if (page > 1) {
       setPage(page - 1);
     }
   };
-
 
   const handleNextPage = () => {
     if (page < totalPages) {
@@ -127,7 +130,17 @@ function BrowseItemsPage({ setCurrentPage, setSelectedBook }) {
 
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, mediaType, availability, language, location, sortBy, minRating, yearFrom, yearTo]);
+  }, [
+    searchTerm,
+    mediaType,
+    availability,
+    language,
+    location,
+    sortBy,
+    minRating,
+    yearFrom,
+    yearTo,
+  ]);
 
   //UI start
 
@@ -144,8 +157,8 @@ function BrowseItemsPage({ setCurrentPage, setSelectedBook }) {
         }}
       >
         {/* Dropdown filters for the tpye of book */}
-        <select 
-          style={{ padding: "10px", fontSize: "14px" }} 
+        <select
+          style={{ padding: "10px", fontSize: "14px" }}
           value={mediaType}
           onChange={(e) => setMediaType(e.target.value)}
         >
@@ -160,7 +173,10 @@ function BrowseItemsPage({ setCurrentPage, setSelectedBook }) {
           type="text"
           placeholder="Search by title or author..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setGlobalSearchTerm(e.target.value); // keep global term in sync
+          }}
           style={{
             flex: 1,
             padding: "10px",
@@ -199,9 +215,6 @@ function BrowseItemsPage({ setCurrentPage, setSelectedBook }) {
         </button>
       </div>
 
-
-
-
       <div style={{ display: "flex", gap: "20px" }}>
         {/* This is the code for the sidebar for the filters*/}
 
@@ -218,7 +231,14 @@ function BrowseItemsPage({ setCurrentPage, setSelectedBook }) {
           <h4 style={{ marginBottom: "15px" }}>Filter</h4>
 
           {/* Sorting options */}
-          <div style={{ marginBottom: "15px", display: "flex", alignItems: "center", gap: "10px" }}>
+          <div
+            style={{
+              marginBottom: "15px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
             <label style={{ minWidth: "80px" }}>Sort By:</label>
             <select
               value={sortBy}
@@ -236,7 +256,14 @@ function BrowseItemsPage({ setCurrentPage, setSelectedBook }) {
 
           {/* Availability  */}
 
-          <div style={{ marginBottom: "15px", display: "flex", alignItems: "center", gap: "10px" }}>
+          <div
+            style={{
+              marginBottom: "15px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
             <label style={{ minWidth: "80px" }}>Availability:</label>
             <select
               value={availability}
@@ -250,13 +277,29 @@ function BrowseItemsPage({ setCurrentPage, setSelectedBook }) {
           </div>
 
           {/* Year of published filtering */}
-          <div style={{ marginBottom: "15px", display: "flex", alignItems: "center", gap: "10px" }}>
+          <div
+            style={{
+              marginBottom: "15px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
             <label style={{ minWidth: "80px" }}>Date Added:</label>
-            <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "8px" }}>
-         
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
               {(() => {
                 const currentYear = new Date().getFullYear();
-                const years = Array.from({ length: 20 }, (_, i) => currentYear - i);
+                const years = Array.from(
+                  { length: 20 },
+                  (_, i) => currentYear - i
+                );
                 return (
                   <>
                     <select
@@ -290,12 +333,15 @@ function BrowseItemsPage({ setCurrentPage, setSelectedBook }) {
             </div>
           </div>
 
-
-
-
-
           {/* Location */}
-          <div style={{ marginBottom: "15px", display: "flex", alignItems: "center", gap: "10px" }}>
+          <div
+            style={{
+              marginBottom: "15px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
             <label style={{ minWidth: "80px" }}>Location:</label>
             <select
               value={location}
@@ -310,7 +356,14 @@ function BrowseItemsPage({ setCurrentPage, setSelectedBook }) {
           </div>
 
           {/* Language  only for french and english */}
-          <div style={{ marginBottom: "15px", display: "flex", alignItems: "center", gap: "10px" }}>
+          <div
+            style={{
+              marginBottom: "15px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
             <label style={{ minWidth: "80px" }}>Language:</label>
             <select
               value={language}
@@ -358,17 +411,17 @@ function BrowseItemsPage({ setCurrentPage, setSelectedBook }) {
           </div>
         </div>
 
-
-
         {/* Displaying the results of the books, 3 per row 15 max per page*/}
         <div style={{ flex: 1 }}>
           {/* Sets the grid for the books */}
-          <div style={{ 
-            display: "grid", 
-            gridTemplateColumns: "repeat(3, 1fr)", 
-            gap: "20px",
-            marginBottom: "15px"
-          }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: "20px",
+              marginBottom: "15px",
+            }}
+          >
             {/*Mpas through the possible books and renders them */}
             {paginatedBooks.map((book) => (
               <div
@@ -386,11 +439,10 @@ function BrowseItemsPage({ setCurrentPage, setSelectedBook }) {
                   transition: "box-shadow 0.2s ease",
                 }}
                 onMouseEnter={(e) =>
-                  (e.currentTarget.style.boxShadow = "0 2px 6px rgba(0,0,0,0.1)")
+                  (e.currentTarget.style.boxShadow =
+                    "0 2px 6px rgba(0,0,0,0.1)")
                 }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.boxShadow = "none")
-                }
+                onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
               >
                 {/* Centers the image */}
                 <img
@@ -404,17 +456,29 @@ function BrowseItemsPage({ setCurrentPage, setSelectedBook }) {
                     marginBottom: "10px",
                   }}
                 />
-                
+
                 {/* Displays each one */}
                 <div style={{ textAlign: "center", marginBottom: "5px" }}>
-                  <h3 style={{ margin: "0 0 3px 0", fontSize: "14px" }}>{book.title}</h3>
+                  <h3 style={{ margin: "0 0 3px 0", fontSize: "14px" }}>
+                    {book.title}
+                  </h3>
                   <p style={{ margin: 0, color: "#555", fontSize: "12px" }}>
-                    {book.mediaType.toLowerCase()} {book.availability.toLowerCase() === "available" ? "✓" : "✗"}
+                    {book.mediaType.toLowerCase()}{" "}
+                    {book.availability.toLowerCase() === "available"
+                      ? "✓"
+                      : "✗"}
                   </p>
                 </div>
 
                 {/* Author  */}
-                <p style={{ margin: "5px 0", color: "#666", fontSize: "12px", textAlign: "center" }}>
+                <p
+                  style={{
+                    margin: "5px 0",
+                    color: "#666",
+                    fontSize: "12px",
+                    textAlign: "center",
+                  }}
+                >
                   {book.author}
                 </p>
 
@@ -427,13 +491,15 @@ function BrowseItemsPage({ setCurrentPage, setSelectedBook }) {
           </div>
 
           {/* Logic for if there are books on the next page or not */}
-          <div style={{ 
-            display: "flex", 
-            alignItems: "center", 
-            justifyContent: "center", 
-            gap: "20px",
-            marginTop: "20px" 
-          }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "20px",
+              marginTop: "20px",
+            }}
+          >
             <button
               onClick={handlePreviousPage}
               disabled={page === 1}
@@ -450,11 +516,10 @@ function BrowseItemsPage({ setCurrentPage, setSelectedBook }) {
               <ChevronLeft size={24} />
             </button>
 
-
-
-
             <p style={{ color: "#555", margin: 0 }}>
-              Results {startIndex + 1}–{Math.min(endIndex, filteredBooks.length)} of {filteredBooks.length}
+              Results {startIndex + 1}–
+              {Math.min(endIndex, filteredBooks.length)} of{" "}
+              {filteredBooks.length}
             </p>
 
             <button

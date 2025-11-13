@@ -2,10 +2,16 @@ import React, { useState } from "react";
 import { getStyles } from "../../styles/styles";
 import Popup from "../Popup";
 
-function HomePage({ textSize }) {
+function HomePage({ textSize, setGlobalSearchTerm, setCurrentPage }) {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const styles = getStyles(textSize); // Get styles based on textSize
-
+  // State / Variables decarlation
+  const [searchTerm, setSearchTerm] = useState("");
+    
+  const handleSearch = () => {
+    setGlobalSearchTerm(searchTerm);
+    setCurrentPage("browse"); // navigate to BrowseItemsPage
+  };
   return (
     <div>
       {/* background image and title */}
@@ -16,8 +22,10 @@ function HomePage({ textSize }) {
           </h1>
           <input type="text"
             placeholder="Search for books, articles, and more..."
-            style={styles.homeSearchBar} />
-          <button style={styles.homeSearchButton}>Search</button>
+            style={styles.homeSearchBar} 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}/>
+          <button style={styles.homeSearchButton} onClick={handleSearch}>Search</button>
         </div>
       </div>
       {/* info / bottom section  */}

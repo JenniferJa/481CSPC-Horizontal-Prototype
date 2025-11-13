@@ -42,6 +42,8 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [userBookLists, setUserBookLists] = useState(initialBookLists);
 
+  const [globalSearchTerm, setGlobalSearchTerm] = useState("");
+
   const handleLogin = (email, password) => {
     if (email === 'matias@test.com' && password === '123') {
       setIsLoggedIn(true);
@@ -69,13 +71,18 @@ function App() {
   const renderPage = () => {
     switch (currentPage) {
       case "home":
-        return <HomePage textSize={textSize} />;
+        return <HomePage textSize={textSize} 
+        globalSearchTerm={globalSearchTerm} 
+        setGlobalSearchTerm={setGlobalSearchTerm}
+        setCurrentPage={setCurrentPage}/>;
       case "browse":
         return (
           <BrowseItemsPage
             textSize={textSize}
             setCurrentPage={setCurrentPage}
             setSelectedBook={setSelectedBook}
+            globalSearchTerm={globalSearchTerm} 
+            setGlobalSearchTerm={setGlobalSearchTerm}
           />
         );
       case "login":
