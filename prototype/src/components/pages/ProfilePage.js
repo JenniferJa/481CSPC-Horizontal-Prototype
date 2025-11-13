@@ -167,7 +167,7 @@ const BookSection = ({
       setCurrentPage("SelectedItemsPage");
     };
 
-    const bookLinkStyle = {
+    const titleButtonStyle = {
       color: "#0056b3",
       textDecoration: "none",
       fontWeight: "500",
@@ -176,17 +176,52 @@ const BookSection = ({
       padding: 0,
       cursor: "pointer",
       textAlign: "left",
+      fontSize: "1rem",
+      lineHeight: "1.2",
     };
 
+    const titleContainerStyle = {
+      display: "inline-flex",
+      flexDirection: "column",
+      alignItems: "flex-start",
+      gap: "2px",
+    };
+
+    // This underlines the title/author whenever the user hovers over it 
     const titleLink = (
-      <button
-        onClick={handleBookClick}
-        style={bookLinkStyle}
-        onMouseEnter={(e) => (e.target.style.textDecoration = "underline")}
-        onMouseLeave={(e) => (e.target.style.textDecoration = "none")}
-      >
-        {book.title}
-      </button>
+      <div style={titleContainerStyle}>
+        <button
+          onClick={handleBookClick}
+          style={titleButtonStyle}
+          onMouseEnter={(e) => {
+            e.target.style.textDecoration = "underline";
+            e.target.style.textDecorationColor = "#000";
+            e.target.style.color = "#000";
+            const authorElement = e.target.nextElementSibling;
+            if (authorElement) {
+              authorElement.style.textDecoration = "underline";
+              authorElement.style.textDecorationColor = "#000";
+              authorElement.style.color = "#000";
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.textDecoration = "none";
+            e.target.style.color = titleButtonStyle.color;
+            const authorElement = e.target.nextElementSibling;
+            if (authorElement) {
+              authorElement.style.textDecoration = "none";
+              authorElement.style.color = "#4b5563";
+            }
+          }}
+        >
+          {book.title}
+        </button>
+        {book.author && (
+          <span style={{ fontSize: "0.85rem", color: "#4b5563" }}>
+            {book.author}
+          </span>
+        )}
+      </div>
     );
 
     // This function will be called when "Cancel" is clicked
