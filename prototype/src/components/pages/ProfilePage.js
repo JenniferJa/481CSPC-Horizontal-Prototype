@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { getStyles } from "../../styles/styles";
 import { findBookById } from "../../database";
 import HoldPlacementPopup from "../HoldPlacementButtonPopup";
-import { Heart, ChevronDown, ChevronUp } from "lucide-react";
+import { Heart, ChevronDown, ChevronUp, Mic } from "lucide-react";
 
 const BookSection = ({
   title,
@@ -16,6 +16,7 @@ const BookSection = ({
 }) => {
   const styles = getStyles(textSize);
   const [isExpanded, setIsExpanded] = useState(false);
+
   const locationInfo = {
     TFDL: {
       address: "Taylor Family Digital Library, 410 University Ct NW, Calgary",
@@ -549,18 +550,66 @@ function ProfilePage({
     },
   };
 
+  // Search bar
+  const [searchQuery, setSearchQuery] = useState("");
+  const filterBooks = (books) =>
+    books.filter((book) =>
+      book.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
   return (
     <div style={styles.pageContainer}>
       <div style={styles.contentBox(textSize)}>
         <h2 style={{ color: "#666", fontWeight: "500" }}>User Profile</h2>
         <div style={localStyles.profileHeader}>
-          <span style={localStyles.profileName}>{currentUser.name}</span>
-          <span style={localStyles.profileName}>{currentUser.ucid}</span>
+          <span style={localStyles.profileName}>
+            {currentUser.name} ({currentUser.ucid})
+          </span>
+          {/* <span style={localStyles.profileName}></span> */}
+          <div
+            style={{
+              margin: "0px 0",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <input
+              type="text"
+              placeholder="Search books by title..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                flex: 1,
+                padding: "10px",
+                marginRight: "10px",
+                fontSize: "14px",
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+                minWidth: "400px",
+              }}
+            />
+            {/*voice serach button design, no functionality included */}
+            <button
+              style={{
+                padding: "10px",
+                backgroundColor: "#297373",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Mic size={20} />
+            </button>
+          </div>
         </div>
 
         <BookSection
           title="Overdue"
-          books={overdueBooks}
+          books={filterBooks(overdueBooks)}
           textSize={textSize} // Pass textSize
           fineAmount={currentUser.currentFines}
           setCurrentPage={setCurrentPage}
@@ -570,7 +619,7 @@ function ProfilePage({
 
         <BookSection
           title="Checked Out"
-          books={checkedOutBooks}
+          books={filterBooks(checkedOutBooks)}
           textSize={textSize} // Pass textSize
           setCurrentPage={setCurrentPage}
           setSelectedBook={setSelectedBook}
@@ -578,7 +627,7 @@ function ProfilePage({
         />
         <BookSection
           title="On Hold"
-          books={onHoldBooks}
+          books={filterBooks(onHoldBooks)}
           textSize={textSize} // Pass textSize
           setCurrentPage={setCurrentPage}
           setSelectedBook={setSelectedBook}
@@ -587,7 +636,7 @@ function ProfilePage({
 
         <BookSection
           title="Wishlist"
-          books={wishlistBooks}
+          books={filterBooks(wishlistBooks)}
           textSize={textSize} // Pass textSize
           setCurrentPage={setCurrentPage}
           setSelectedBook={setSelectedBook}
@@ -596,7 +645,7 @@ function ProfilePage({
         />
         <BookSection
           title="Returned"
-          books={returnedBooks}
+          books={filterBooks(returnedBooks)}
           textSize={textSize} // Pass textSize
           setCurrentPage={setCurrentPage}
           setSelectedBook={setSelectedBook}
