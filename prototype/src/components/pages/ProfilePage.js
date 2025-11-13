@@ -3,6 +3,7 @@ import { getStyles } from "../../styles/styles";
 import { findBookById } from "../../database";
 import HoldPlacementPopup from "../HoldPlacementButtonPopup";
 import { Heart, ChevronDown, ChevronUp, Mic } from "lucide-react";
+import RenewPopup from "../RenewPopup";
 
 const BookSection = ({
   title,
@@ -11,11 +12,14 @@ const BookSection = ({
   fineAmount,
   setCurrentPage,
   setSelectedBook,
+  userBookLists,
   setUserBookLists,
   activeBookIds,
 }) => {
   const styles = getStyles(textSize);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isRenewPopupOpen, setIsRenewPopupOpen] = useState(false);
+  const [selectedBookForRenewal, setSelectedBookForRenewal] = useState(null);
 
   const locationInfo = {
     TFDL: {
@@ -263,7 +267,27 @@ const BookSection = ({
         return (
           <>
             <span style={listTextStyle}>{titleLink}</span>
-            <span style={{ color: "#666" }}>{dueDateText}</span>
+
+            <span style={{ color: "#666" }}>
+              <button
+                style={listButtonStyle}
+                onClick={() => {
+                  setSelectedBookForRenewal(book);
+                  setIsRenewPopupOpen(true);
+                }}
+              >
+                Renew
+              </button>{" "}
+              {dueDateText}{" "}
+            </span>
+            <RenewPopup
+              isOpen={isRenewPopupOpen}
+              onClose={() => setIsRenewPopupOpen(false)}
+              book={selectedBookForRenewal}
+              userBookLists={userBookLists}
+              setUserBookLists={setUserBookLists}
+              textSize={textSize}
+            />
           </>
         );
       }
@@ -624,6 +648,7 @@ function ProfilePage({
           setCurrentPage={setCurrentPage}
           setSelectedBook={setSelectedBook}
           setUserBookLists={setUserBookLists}
+          userBookLists={userBookLists}
         />
         <BookSection
           title="On Hold"
