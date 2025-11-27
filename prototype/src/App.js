@@ -5,30 +5,21 @@ import BrowseItemsPage from "./components/pages/BrowseItemsPage";
 import BookTinderPage from "./components/pages/BookTinderPage";
 import ProfilePage from "./components/pages/ProfilePage";
 import LoginPage from "./components/pages/LoginPage";
+import HelpPage from "./components/pages/HelpPage";
 import { getStyles } from "./styles/styles";
 import SelectedItemsPage from "./components/pages/SelectedItemsPage";
 
 const initialBookLists = {
-  overdue: [
-    { bookId: 1, dueDate: 'Oct 15, 2025' },
-  ],
-  returned: [
-    { bookId: 5 },
-  ],
-  checkedOut: [
-    { bookId: 9, status: 'checked_out', dueDate: 'Nov 10, 2025' },
-  ],
-  onHold: [
-    { bookId: 4, status: 'ready_for_pickup', location: 'TFDL' },
-  ],
-  wishlist: [
-    { bookId: 31 },
-  ],
+  overdue: [{ bookId: 1, dueDate: "Oct 15, 2025" }],
+  returned: [{ bookId: 5 }],
+  checkedOut: [{ bookId: 9, status: "checked_out", dueDate: "Nov 10, 2025" }],
+  onHold: [{ bookId: 4, status: "ready_for_pickup", location: "TFDL" }],
+  wishlist: [{ bookId: 31 }],
 };
 
 const mockUserData = {
-  name: 'Matias Campuzano',
-  ucid: '3014436',
+  name: "Matias Campuzano",
+  ucid: "3014436",
   currentFines: 1000,
 };
 
@@ -45,11 +36,11 @@ function App() {
   const [globalSearchTerm, setGlobalSearchTerm] = useState("");
 
   const handleLogin = (email, password) => {
-    if (email === 'matias@test.com' && password === '123') {
+    if (email === "matias@test.com" && password === "123") {
       setIsLoggedIn(true);
       setCurrentUser(mockUserData);
       setUserBookLists(initialBookLists);
-      setCurrentPage('home');
+      setCurrentPage("home");
       return true;
     }
     return false;
@@ -65,41 +56,45 @@ function App() {
       onHold: [],
       wishlist: [],
     });
-    setCurrentPage('home');
+    setCurrentPage("home");
   };
 
   const renderPage = () => {
     switch (currentPage) {
       case "home":
-        return <HomePage textSize={textSize} 
-        globalSearchTerm={globalSearchTerm} 
-        setGlobalSearchTerm={setGlobalSearchTerm}
-        setCurrentPage={setCurrentPage}/>;
+        return (
+          <HomePage
+            textSize={textSize}
+            globalSearchTerm={globalSearchTerm}
+            setGlobalSearchTerm={setGlobalSearchTerm}
+            setCurrentPage={setCurrentPage}
+          />
+        );
       case "browse":
         return (
           <BrowseItemsPage
             textSize={textSize}
             setCurrentPage={setCurrentPage}
             setSelectedBook={setSelectedBook}
-            globalSearchTerm={globalSearchTerm} 
+            globalSearchTerm={globalSearchTerm}
             setGlobalSearchTerm={setGlobalSearchTerm}
           />
         );
       case "login":
         return <LoginPage onLogin={handleLogin} textSize={textSize} />;
 
-    case "tinder":
-      if (!isLoggedIn) {
-        return <LoginPage onLogin={handleLogin} textSize={textSize} />;
-      }
-      return (
-        <BookTinderPage
-          textSize={textSize}
-          isLoggedIn={isLoggedIn}
-          userBookLists={userBookLists}
-          setUserBookLists={setUserBookLists}
-        />
-      );
+      case "tinder":
+        if (!isLoggedIn) {
+          return <LoginPage onLogin={handleLogin} textSize={textSize} />;
+        }
+        return (
+          <BookTinderPage
+            textSize={textSize}
+            isLoggedIn={isLoggedIn}
+            userBookLists={userBookLists}
+            setUserBookLists={setUserBookLists}
+          />
+        );
 
       case "profile":
         if (!isLoggedIn) {
@@ -126,6 +121,8 @@ function App() {
             setUserBookLists={setUserBookLists}
           />
         );
+      case "help":
+        return <HelpPage setCurrentPage={setCurrentPage} textSize={textSize} />;
       default:
         return <HomePage textSize={textSize} />;
     }

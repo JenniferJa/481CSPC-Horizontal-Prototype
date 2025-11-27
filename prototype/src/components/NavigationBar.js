@@ -1,16 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { ALargeSmall, User, LogIn, LogOut } from 'lucide-react';
-import { getStyles } from '../styles/styles';
+import React, { useState, useEffect } from "react";
+import { ALargeSmall, User, LogIn, LogOut, HelpCircle } from "lucide-react";
+import { getStyles } from "../styles/styles";
 
-function NavigationBar({ currentPage, setCurrentPage, textSize, setTextSize, isLoggedIn, handleLogout }) {
+function NavigationBar({
+  currentPage,
+  setCurrentPage,
+  textSize,
+  setTextSize,
+  isLoggedIn,
+  handleLogout,
+}) {
   const styles = getStyles(textSize);
 
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   useEffect(() => {
     const handleResize = () => setIsSmallScreen(window.innerWidth < 950);
     handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return (
@@ -18,16 +25,20 @@ function NavigationBar({ currentPage, setCurrentPage, textSize, setTextSize, isL
       <div style={styles.navContainer}>
         {/* Left: Title */}
         <div style={styles.navTitle}>
-          <button 
+          <button
             style={styles.logoButton}
-            onClick={() => setCurrentPage('home')}>
-            <img src="/uofc_onlylogo.png" alt="logo" style={styles.logo}/>
+            onClick={() => setCurrentPage("home")}
+          >
+            <img src="/uofc_onlylogo.png" alt="logo" style={styles.logo} />
           </button>
-          <div style={{margin: "10px"}}>
+          <div style={{ margin: "10px" }}>
             <h1 style={styles.titleText}>University of Calgary</h1>
             {!isSmallScreen && (
-            <h1 style={styles.subTitleText}>Libraries and Cultural Resources</h1>  )}
-          </div> 
+              <h1 style={styles.subTitleText}>
+                Libraries and Cultural Resources
+              </h1>
+            )}
+          </div>
         </div>
 
         {/* Center: Links */}
@@ -35,18 +46,18 @@ function NavigationBar({ currentPage, setCurrentPage, textSize, setTextSize, isL
           <button
             style={{
               ...styles.navLink,
-              ...(currentPage === 'browse' && styles.navLinkActive),
+              ...(currentPage === "browse" && styles.navLinkActive),
             }}
-            onClick={() => setCurrentPage('browse')}
+            onClick={() => setCurrentPage("browse")}
           >
             Search
           </button>
           <button
             style={{
               ...styles.navLink,
-              ...(currentPage === 'tinder' && styles.navLinkActive),
+              ...(currentPage === "tinder" && styles.navLinkActive),
             }}
-            onClick={() => setCurrentPage('tinder')}
+            onClick={() => setCurrentPage("tinder")}
           >
             Browse Recommendations
           </button>
@@ -55,9 +66,13 @@ function NavigationBar({ currentPage, setCurrentPage, textSize, setTextSize, isL
         {/* Right: Text Size & Profile */}
         <div style={styles.navRight}>
           <button
-            style={textSize === 'large' ? styles.iconButtonActive : styles.iconButton}
-            onClick={() => setTextSize(textSize === 'normal' ? 'large' : 'normal')}
-            title={textSize === 'large' ? 'Decrease Text Size' : 'Enlarge Text'}
+            style={
+              textSize === "large" ? styles.iconButtonActive : styles.iconButton
+            }
+            onClick={() =>
+              setTextSize(textSize === "normal" ? "large" : "normal")
+            }
+            title={textSize === "large" ? "Decrease Text Size" : "Enlarge Text"}
             data-font-size-toggle={textSize}
           >
             <ALargeSmall />
@@ -67,13 +82,17 @@ function NavigationBar({ currentPage, setCurrentPage, textSize, setTextSize, isL
             <>
               <button
                 style={styles.profileButton}
-                onClick={() => setCurrentPage('profile')}
+                onClick={() => setCurrentPage("profile")}
               >
                 <User size={20} />
                 Profile
               </button>
               <button
-                style={{...styles.profileButton, background: '#f8f9fa', color: '#333'}}
+                style={{
+                  ...styles.profileButton,
+                  background: "#f8f9fa",
+                  color: "#333",
+                }}
                 onClick={handleLogout}
               >
                 <LogOut size={20} />
@@ -83,12 +102,19 @@ function NavigationBar({ currentPage, setCurrentPage, textSize, setTextSize, isL
           ) : (
             <button
               style={styles.profileButton}
-              onClick={() => setCurrentPage('login')}
+              onClick={() => setCurrentPage("login")}
             >
               <LogIn size={20} />
               Login
             </button>
           )}
+          <button
+            style={styles.iconButton}
+            onClick={() => setCurrentPage("help")}
+            title="Help"
+          >
+            <HelpCircle />
+          </button>
         </div>
       </div>
     </nav>
