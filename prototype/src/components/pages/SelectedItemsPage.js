@@ -125,6 +125,9 @@ function SelectedItemsPage({
   // Wishlist Popup State
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
 
+  // Error Popup State for unavailable books
+  const [isUnavailableErrorOpen, setIsUnavailableErrorOpen] = useState(false);
+
   const customStyles = {
     detailsContainer: {
       display: "flex",
@@ -385,6 +388,12 @@ function SelectedItemsPage({
   };
 
   const handlePlaceQueueHold = () => {
+    // If book is unavailable, show error popup instead
+    if (isUnavailable) {
+      setIsUnavailableErrorOpen(true);
+      return;
+    }
+    
     const isAlreadyOnHold = userBookLists.onHold.some(
       (item) => item.bookId === id
     );
@@ -399,6 +408,10 @@ function SelectedItemsPage({
     alert(
       "You have been added to the hold queue. You will be notified when it is ready for pickup."
     );
+  };
+
+  const handleCloseUnavailableError = () => {
+    setIsUnavailableErrorOpen(false);
   };
 
   let userStatus;
@@ -733,6 +746,37 @@ function SelectedItemsPage({
               ...styles.button(textSize),
             }}
             onClick={handleCloseWishlist}
+          >
+            OK
+          </button>
+        </div>
+      </Popup>
+
+      {/* Unavailable Book Error Popup */}
+      <Popup
+        isOpen={isUnavailableErrorOpen}
+        onClose={handleCloseUnavailableError}
+        title="Cannot Place Hold"
+        textSize={textSize}
+      >
+        <div style={customStyles.confirmationContainer}>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <X
+              size={textSize === "large" ? 72 : 64}
+              style={{ color: "#dc2626", marginBottom: "16px" }}
+            />
+          </div>
+          <div style={customStyles.confirmationText}>
+            This book is currently <strong>unavailable</strong> and cannot be placed on hold at this time.
+            <br />
+            <br />
+            Please try again later or add it to your <strong>wishlist</strong> to be notified when it becomes available.
+          </div>
+          <button
+            style={{
+              ...styles.button(textSize),
+            }}
+            onClick={handleCloseUnavailableError}
           >
             OK
           </button>

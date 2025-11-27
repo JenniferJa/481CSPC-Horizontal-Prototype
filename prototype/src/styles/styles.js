@@ -100,6 +100,27 @@ export const getStyles = (textSize) => {
       justifyContent: "center",
       transition: "background-color 0.3s",
     },
+    iconButtonActive: {
+      backgroundColor: "#fff",
+      border: "2px solid #fff",
+      color: primaryColor,
+      padding: textSize === "large" ? "12px 16px" : "8px 12px",
+      borderRadius: "4px",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      transition: "background-color 0.3s",
+    },
+    iconSize: {
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    iconSizeSvg: {
+      width: textSize === "large" ? "24px" : "20px",
+      height: textSize === "large" ? "24px" : "20px",
+    },
     profileButton: {
       backgroundColor: primaryColor,
       color: "#fff",

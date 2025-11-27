@@ -20,3 +20,14 @@ code {
 button:hover {
   opacity: 0.8;
 }
+
+/* Control SVG icon size for font size toggle button only */
+nav button[data-font-size-toggle="normal"] svg {
+  width: 20px;
+  height: 20px;
+}
+
+nav button[data-font-size-toggle="large"] svg {
+  width: 24px;
+  height: 24px;
+}
