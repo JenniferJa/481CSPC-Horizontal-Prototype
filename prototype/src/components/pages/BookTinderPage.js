@@ -280,7 +280,7 @@ export default function BookTinderPage({
     <div style={bt.page}>
       <div style={bt.header}>
         <div style={bt.currentCounter}>
-          {currentIndexDisplay}/{totalCount}
+          Page {currentIndexDisplay}/{totalCount}
         </div>
       </div>
 
@@ -317,7 +317,7 @@ export default function BookTinderPage({
                 ⟲ Undo
               </button>
             </div>
-            <div style={{ fontSize: 12, opacity: 0.7, marginTop: 6 }}>
+            <div style={{ fontSize: 14, opacity: 0.7, marginTop: 6 }}>
               Tip: use ← / → to pass/like, Backspace to undo.
             </div>
           </>
