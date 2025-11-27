@@ -393,7 +393,7 @@ function SelectedItemsPage({
       setIsUnavailableErrorOpen(true);
       return;
     }
-    
+
     const isAlreadyOnHold = userBookLists.onHold.some(
       (item) => item.bookId === id
     );
@@ -438,6 +438,20 @@ function SelectedItemsPage({
 
   const isAvailableForHold = userStatus.toLowerCase() === "available";
   const isUnavailable = userStatus.toLowerCase() === "unavailable";
+
+  const [isCancelHoldOpen, setIsCancelHoldOpen] = useState(false);
+
+  const handleCancelHold = () => {
+    setUserBookLists((prevLists) => ({
+      ...prevLists,
+      onHold: prevLists.onHold.filter((item) => item.bookId !== id),
+    }));
+
+    setIsCancelHoldOpen(true);
+  };
+  const handleCloseCancelHold = () => {
+    setIsCancelHoldOpen(false);
+  };
 
   return (
     <div style={styles.pageContainer}>
@@ -575,7 +589,7 @@ function SelectedItemsPage({
                   </button>
                 )}
 
-                {!isAvailableForHold && !isUnavailable && (
+                {/* {!isAvailableForHold && !isUnavailable && (
                   <p
                     style={{
                       ...customStyles.label,
@@ -589,7 +603,44 @@ function SelectedItemsPage({
                       ? "Already on hold"
                       : "Not available to place on hold"}
                   </p>
+                )} */}
+                {userStatus === "On Hold" && (
+                  <button
+                    onClick={handleCancelHold}
+                    style={{
+                      ...styles.button(textSize),
+                      width: "auto",
+                      paddingLeft: "24px",
+                      paddingRight: "24px",
+                      backgroundColor: "#dc2626",
+                      borderColor: "#dc2626",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.backgroundColor = "#b91c1c")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.backgroundColor = "#dc2626")
+                    }
+                  >
+                    Cancel Hold
+                  </button>
                 )}
+
+                {!isAvailableForHold &&
+                  userStatus !== "On Hold" &&
+                  userStatus !== "Unavailable" && (
+                    <p
+                      style={{
+                        ...customStyles.label,
+                        color: "#dc2626",
+                        fontSize: "15px",
+                        fontWeight: "500",
+                        alignSelf: "center",
+                      }}
+                    >
+                      Not available to place on hold
+                    </p>
+                  )}
 
                 <div style={{ fontFamily: "system-ui, sans-serif" }}>
                   <button
@@ -640,6 +691,51 @@ function SelectedItemsPage({
           <p style={customStyles.description}>{description}</p>
         </div>
       </div>
+      {/* Cancel Hold Popup */}
+      <Popup
+        isOpen={isCancelHoldOpen}
+        onClose={handleCloseCancelHold}
+        title="Hold Cancelled"
+        textSize={textSize}
+      >
+        <div style={customStyles.confirmationContainer}>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <CheckCircle
+              size={textSize === "large" ? 72 : 64}
+              style={customStyles.checkIcon}
+            />
+          </div>
+
+          <div style={customStyles.confirmationText}>
+            Your hold for <strong>{title}</strong> has been removed!
+            <br />
+            You can manage remaining holds on{" "}
+            <a
+              href="/profile"
+              style={customStyles.link}
+              onClick={(e) => {
+                e.preventDefault();
+                if (setCurrentPage) {
+                  setCurrentPage("profile");
+                  handleCloseCancelHold();
+                }
+              }}
+            >
+              Profile
+            </a>
+            .
+          </div>
+
+          <button
+            style={{
+              ...styles.button(textSize),
+            }}
+            onClick={handleCloseCancelHold}
+          >
+            OK
+          </button>
+        </div>
+      </Popup>
 
       {/* Rating Popup */}
       <Popup
@@ -767,10 +863,14 @@ function SelectedItemsPage({
             />
           </div>
           <div style={customStyles.confirmationText}>
-            This book is currently <strong>unavailable</strong> and cannot be placed on hold at this time.
+            This book is currently <strong>unavailable</strong> and cannot be
+            placed on hold at this time.
             <br />
             <br />
-            Please try again later or add it to your <strong>wishlist</strong> to be notified when it becomes available.
+            Please try again later or add it to your <strong>
+              wishlist
+            </strong>{" "}
+            to be notified when it becomes available.
           </div>
           <button
             style={{
