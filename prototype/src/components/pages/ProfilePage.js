@@ -2,7 +2,14 @@ import React, { useState } from "react";
 import { getStyles } from "../../styles/styles";
 import { findBookById } from "../../database";
 import HoldPlacementPopup from "../HoldPlacementButtonPopup";
-import { Heart, ChevronDown, ChevronUp, Mic, X, AlertTriangle } from "lucide-react";
+import {
+  Heart,
+  ChevronDown,
+  ChevronUp,
+  Mic,
+  X,
+  AlertTriangle,
+} from "lucide-react";
 import RenewPopup from "../RenewPopup";
 
 const BookSection = ({
@@ -85,7 +92,6 @@ const BookSection = ({
 
     borderRadius: "50%",
     backgroundColor: "#007bff",
-
   };
 
   // click handler for the (i) button
@@ -192,7 +198,7 @@ const BookSection = ({
       gap: "2px",
     };
 
-    // This underlines the title/author whenever the user hovers over it 
+    // This underlines the title/author whenever the user hovers over it
     const titleLink = (
       <div style={titleContainerStyle}>
         <button
@@ -494,7 +500,9 @@ const BookSection = ({
     if (bookToCancel) {
       setUserBookLists((prevLists) => ({
         ...prevLists,
-        onHold: prevLists.onHold.filter((item) => item.bookId !== bookToCancel.id),
+        onHold: prevLists.onHold.filter(
+          (item) => item.bookId !== bookToCancel.id
+        ),
       }));
       setIsCancelConfirmOpen(false);
       setBookToCancel(null);
@@ -508,7 +516,13 @@ const BookSection = ({
   };
 
   // Popup component for cancel confirmation
-  const CancelConfirmPopup = ({ isOpen, onClose, onConfirm, book, textSize }) => {
+  const CancelConfirmPopup = ({
+    isOpen,
+    onClose,
+    onConfirm,
+    book,
+    textSize,
+  }) => {
     if (!isOpen) return null;
 
     const styles = getStyles(textSize);
@@ -593,7 +607,6 @@ const BookSection = ({
               onClick={onClose}
               title="Close"
             >
-
               <X size={textSize === "large" ? 28 : 24} />
             </button>
           </div>
@@ -616,22 +629,16 @@ const BookSection = ({
               <div style={customStyles.confirmationText}>
                 Are you sure you want to cancel your hold on{" "}
                 <strong>{book?.title}</strong>?
-                <br/>
-                <br/>
-                This action cannot be undone. You will need to place a new hold if
-                you want to reserve this book again.
+                <br />
+                <br />
+                This action cannot be undone. You will need to place a new hold
+                if you want to reserve this book again.
               </div>
               <div style={customStyles.buttonContainer}>
-                <button
-                  style={customStyles.cancelButton}
-                  onClick={onClose}
-                >
+                <button style={customStyles.cancelButton} onClick={onClose}>
                   No, Keep Hold
                 </button>
-                <button
-                  style={customStyles.confirmButton}
-                  onClick={onConfirm}
-                >
+                <button style={customStyles.confirmButton} onClick={onConfirm}>
                   Yes, Cancel Hold
                 </button>
               </div>
@@ -781,6 +788,29 @@ function ProfilePage({
       book.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+  const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
+  const [sortOrder, setSortOrder] = useState("recent"); // "recent" or "oldest"
+  const filterAndSortBooks = (books) => {
+    return books
+      .filter((book) =>
+        book.title.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      .filter((book) => {
+        if (!dateFilter.from && !dateFilter.to) return true;
+        const bookDate = new Date(book.date); // assuming book.date exists
+        if (dateFilter.from && bookDate < new Date(dateFilter.from))
+          return false;
+        if (dateFilter.to && bookDate > new Date(dateFilter.to)) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        if (!a.date || !b.date) return 0;
+        return sortOrder === "recent"
+          ? new Date(b.date) - new Date(a.date)
+          : new Date(a.date) - new Date(b.date);
+      });
+  };
+
   return (
     <div style={styles.pageContainer}>
       <div style={styles.contentBox(textSize)}>
@@ -792,11 +822,14 @@ function ProfilePage({
           {/* <span style={localStyles.profileName}></span> */}
           <div
             style={{
-              margin: "0px 0",
               display: "flex",
-              justifyContent: "center",
+              flexWrap: "wrap",
+              gap: "10px",
+              alignItems: "center",
+              marginBottom: "20px",
             }}
           >
+            {/* Search Input */}
             <input
               type="text"
               placeholder="Search books by title..."
@@ -804,30 +837,95 @@ function ProfilePage({
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
                 flex: 1,
-                padding: "10px",
-                marginRight: "10px",
+                minWidth: "300px",
+                padding: "12px 16px",
                 fontSize: "14px",
                 border: "1px solid #ccc",
-                borderRadius: "4px",
-                minWidth: "400px",
+                borderRadius: "6px",
+                outline: "none",
+                transition: "border-color 0.2s",
               }}
+              onFocus={(e) => (e.target.style.borderColor = "#297373")}
+              onBlur={(e) => (e.target.style.borderColor = "#ccc")}
             />
-            {/*voice serach button design, no functionality included */}
+
+            {/* Voice Search Button */}
             <button
               style={{
-                padding: "10px",
+                padding: "12px",
                 backgroundColor: "#297373",
-                color: "white",
+                color: "#fff",
                 border: "none",
-                borderRadius: "4px",
+                borderRadius: "6px",
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                transition: "background-color 0.2s",
               }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = "#1f5d5d")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "#297373")
+              }
             >
               <Mic size={20} />
             </button>
+
+            {/* Date Filter */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                flexWrap: "wrap",
+              }}
+            >
+              <label style={{ fontSize: "14px" }}>From:</label>
+              <input
+                type="date"
+                value={dateFilter.from}
+                onChange={(e) =>
+                  setDateFilter((prev) => ({ ...prev, from: e.target.value }))
+                }
+                style={{
+                  padding: "8px 10px",
+                  borderRadius: "6px",
+                  border: "1px solid #ccc",
+                }}
+              />
+              <label style={{ fontSize: "14px" }}>To:</label>
+              <input
+                type="date"
+                value={dateFilter.to}
+                onChange={(e) =>
+                  setDateFilter((prev) => ({ ...prev, to: e.target.value }))
+                }
+                style={{
+                  padding: "8px 10px",
+                  borderRadius: "6px",
+                  border: "1px solid #ccc",
+                }}
+              />
+            </div>
+
+            {/* Sort Order */}
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              style={{
+                padding: "10px 12px",
+                borderRadius: "6px",
+                border: "1px solid #ccc",
+                backgroundColor: "#fff",
+                cursor: "pointer",
+                fontSize: "14px",
+              }}
+            >
+              <option value="recent">Most Recent</option>
+              <option value="oldest">Oldest</option>
+            </select>
           </div>
         </div>
 
