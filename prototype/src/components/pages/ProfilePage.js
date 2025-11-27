@@ -781,33 +781,72 @@ function ProfilePage({
     },
   };
 
-  // Search bar
+  // Search and filter bar
   const [searchQuery, setSearchQuery] = useState("");
-  const filterBooks = (books) =>
-    books.filter((book) =>
-      book.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
   const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
   const [sortOrder, setSortOrder] = useState("recent"); // "recent" or "oldest"
+
+  // State for applied filters
+  const [appliedFilters, setAppliedFilters] = useState({
+    searchQuery: "",
+    dateFilter: { from: "", to: "" },
+    sortOrder: "recent",
+  });
+
+  // Function to apply filters when the button is clicked
+  const handleApplyFilters = (
+    newDateFilter = dateFilter,
+    newSortOrder = sortOrder,
+    newSearchQuery = searchQuery
+  ) => {
+    setAppliedFilters({
+      searchQuery: newSearchQuery,
+      dateFilter: newDateFilter,
+      sortOrder: newSortOrder,
+    });
+  };
+
+  // Filter and sort based on appliedFilters
   const filterAndSortBooks = (books) => {
     return books
       .filter((book) =>
-        book.title.toLowerCase().includes(searchQuery.toLowerCase())
+        book.title
+          .toLowerCase()
+          .includes(appliedFilters.searchQuery.toLowerCase())
       )
       .filter((book) => {
-        if (!dateFilter.from && !dateFilter.to) return true;
-        const bookDate = new Date(book.date); // assuming book.date exists
-        if (dateFilter.from && bookDate < new Date(dateFilter.from))
+        // Skip if no date filter applied
+        if (!appliedFilters.dateFilter.from && !appliedFilters.dateFilter.to)
+          return true;
+
+        // If book has no dueDate, skip it
+        if (!book.dueDate) return false;
+
+        const bookDate = new Date(Date.parse(book.dueDate));
+        if (isNaN(bookDate)) return false;
+
+        if (
+          appliedFilters.dateFilter.from &&
+          bookDate < new Date(appliedFilters.dateFilter.from)
+        )
           return false;
-        if (dateFilter.to && bookDate > new Date(dateFilter.to)) return false;
+        if (
+          appliedFilters.dateFilter.to &&
+          bookDate > new Date(appliedFilters.dateFilter.to)
+        )
+          return false;
+
         return true;
       })
       .sort((a, b) => {
-        if (!a.date || !b.date) return 0;
-        return sortOrder === "recent"
-          ? new Date(b.date) - new Date(a.date)
-          : new Date(a.date) - new Date(b.date);
+        const dateA = a.dueDate ? new Date(Date.parse(a.dueDate)) : null;
+        const dateB = b.dueDate ? new Date(Date.parse(b.dueDate)) : null;
+
+        if (!dateA || !dateB) return 0;
+
+        return appliedFilters.sortOrder === "recent"
+          ? dateB - dateA
+          : dateA - dateB;
       });
   };
 
@@ -926,13 +965,67 @@ function ProfilePage({
               <option value="recent">Most Recent</option>
               <option value="oldest">Oldest</option>
             </select>
+            <button
+              onClick={() =>
+                handleApplyFilters(dateFilter, sortOrder, searchQuery)
+              }
+              style={{
+                padding: "12px 16px",
+                backgroundColor: "#297373",
+                color: "#fff",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontSize: "14px",
+                transition: "background-color 0.2s",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = "#1f5d5d")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "#297373")
+              }
+            >
+              Apply
+            </button>
+            <button
+              onClick={() => {
+                const resetFilters = { from: "", to: "" };
+                const resetSort = "recent";
+                const resetSearch = "";
+
+                setDateFilter(resetFilters);
+                setSortOrder(resetSort);
+                setSearchQuery(resetSearch);
+
+                handleApplyFilters(resetFilters, resetSort, resetSearch);
+              }}
+              style={{
+                padding: "12px 16px",
+                backgroundColor: "#d94f5dff",
+                color: "#fff",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontSize: "14px",
+                transition: "background-color 0.2s",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = "#aaa")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "#d94f5dff")
+              }
+            >
+              Reset
+            </button>
           </div>
         </div>
 
         <BookSection
           title="Overdue"
-          books={filterBooks(overdueBooks)}
-          textSize={textSize} // Pass textSize
+          books={filterAndSortBooks(overdueBooks)}
+          textSize={textSize}
           fineAmount={currentUser.currentFines}
           setCurrentPage={setCurrentPage}
           setSelectedBook={setSelectedBook}
@@ -941,17 +1034,18 @@ function ProfilePage({
 
         <BookSection
           title="Checked Out"
-          books={filterBooks(checkedOutBooks)}
-          textSize={textSize} // Pass textSize
+          books={filterAndSortBooks(checkedOutBooks)}
+          textSize={textSize}
           setCurrentPage={setCurrentPage}
           setSelectedBook={setSelectedBook}
           setUserBookLists={setUserBookLists}
           userBookLists={userBookLists}
         />
+
         <BookSection
           title="On Hold"
-          books={filterBooks(onHoldBooks)}
-          textSize={textSize} // Pass textSize
+          books={filterAndSortBooks(onHoldBooks)}
+          textSize={textSize}
           setCurrentPage={setCurrentPage}
           setSelectedBook={setSelectedBook}
           setUserBookLists={setUserBookLists}
@@ -959,21 +1053,22 @@ function ProfilePage({
 
         <BookSection
           title="Wishlist"
-          books={filterBooks(wishlistBooks)}
-          textSize={textSize} // Pass textSize
+          books={filterAndSortBooks(wishlistBooks)}
+          textSize={textSize}
           setCurrentPage={setCurrentPage}
           setSelectedBook={setSelectedBook}
           setUserBookLists={setUserBookLists}
-          activeBookIds={activeBookIds} // Pass the active IDs
+          activeBookIds={activeBookIds}
         />
+
         <BookSection
           title="Returned"
-          books={filterBooks(returnedBooks)}
-          textSize={textSize} // Pass textSize
+          books={filterAndSortBooks(returnedBooks)}
+          textSize={textSize}
           setCurrentPage={setCurrentPage}
           setSelectedBook={setSelectedBook}
           setUserBookLists={setUserBookLists}
-          activeBookIds={activeBookIds} // Pass the active IDs
+          activeBookIds={activeBookIds}
         />
       </div>
     </div>
