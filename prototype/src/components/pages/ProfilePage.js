@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { getStyles } from "../../styles/styles";
 import { findBookById } from "../../database";
 import HoldPlacementPopup from "../HoldPlacementButtonPopup";
-import { Heart, ChevronDown, ChevronUp, Mic } from "lucide-react";
+import { Heart, ChevronDown, ChevronUp, Mic, X, AlertTriangle } from "lucide-react";
 import RenewPopup from "../RenewPopup";
 
 const BookSection = ({
@@ -20,6 +20,8 @@ const BookSection = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isRenewPopupOpen, setIsRenewPopupOpen] = useState(false);
   const [selectedBookForRenewal, setSelectedBookForRenewal] = useState(null);
+  const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
+  const [bookToCancel, setBookToCancel] = useState(null);
 
   const locationInfo = {
     TFDL: {
@@ -227,12 +229,10 @@ const BookSection = ({
       </div>
     );
 
-    // This function will be called when "Cancel" is clicked
+    // This function will be called when "Cancel" is clicked - shows confirmation popup
     const handleCancelHold = () => {
-      setUserBookLists((prevLists) => ({
-        ...prevLists,
-        onHold: prevLists.onHold.filter((item) => item.bookId !== book.id),
-      }));
+      setBookToCancel(book);
+      setIsCancelConfirmOpen(true);
     };
 
     // On Hold
@@ -489,6 +489,159 @@ const BookSection = ({
     );
   };
 
+  // This function actually cancels the hold after confirmation
+  const confirmCancelHold = () => {
+    if (bookToCancel) {
+      setUserBookLists((prevLists) => ({
+        ...prevLists,
+        onHold: prevLists.onHold.filter((item) => item.bookId !== bookToCancel.id),
+      }));
+      setIsCancelConfirmOpen(false);
+      setBookToCancel(null);
+    }
+  };
+
+  // Close the cancel confirmation popup
+  const handleCloseCancelConfirm = () => {
+    setIsCancelConfirmOpen(false);
+    setBookToCancel(null);
+  };
+
+  // Popup component for cancel confirmation
+  const CancelConfirmPopup = ({ isOpen, onClose, onConfirm, book, textSize }) => {
+    if (!isOpen) return null;
+
+    const styles = getStyles(textSize);
+    const customStyles = {
+      confirmationContainer: {
+        textAlign: "center",
+      },
+      warningIcon: {
+        color: "#f59e0b",
+        marginBottom: "16px",
+      },
+      confirmationText: {
+        fontSize: textSize === "large" ? "18px" : "16px",
+        color: "#4b5563",
+        lineHeight: "1.6",
+        marginBottom: "20px",
+      },
+      buttonContainer: {
+        display: "flex",
+        gap: "12px",
+        justifyContent: "center",
+      },
+      cancelButton: {
+        ...styles.button(textSize),
+        backgroundColor: "#6b7280",
+      },
+      confirmButton: {
+        ...styles.button(textSize),
+        backgroundColor: "#d94f5dff",
+      },
+    };
+
+    const handleBackdropClick = (e) => {
+      if (e.target === e.currentTarget) {
+        onClose();
+      }
+    };
+
+    return (
+      <div style={styles.popupBackdrop} onClick={handleBackdropClick}>
+        <div
+          style={{
+            ...styles.popupContent,
+            minWidth:
+              typeof styles.popupContent.minWidth === "function"
+                ? styles.popupContent.minWidth(textSize)
+                : styles.popupContent.minWidth,
+            maxWidth:
+              typeof styles.popupContent.maxWidth === "function"
+                ? styles.popupContent.maxWidth(textSize)
+                : styles.popupContent.maxWidth,
+          }}
+        >
+          <div
+            style={{
+              ...styles.popupHeader,
+              padding:
+                typeof styles.popupHeader.padding === "function"
+                  ? styles.popupHeader.padding(textSize)
+                  : styles.popupHeader.padding,
+            }}
+          >
+            <h2
+              style={{
+                ...styles.popupTitle,
+                fontSize:
+                  typeof styles.popupTitle.fontSize === "function"
+                    ? styles.popupTitle.fontSize(textSize)
+                    : styles.popupTitle.fontSize,
+              }}
+            >
+              Cancel Hold?
+            </h2>
+            <button
+              style={{
+                ...styles.popupCloseButton,
+                padding:
+                  typeof styles.popupCloseButton.padding === "function"
+                    ? styles.popupCloseButton.padding(textSize)
+                    : styles.popupCloseButton.padding,
+              }}
+              onClick={onClose}
+              title="Close"
+            >
+
+              <X size={textSize === "large" ? 28 : 24} />
+            </button>
+          </div>
+          <div
+            style={{
+              ...styles.popupBody,
+              padding:
+                typeof styles.popupBody.padding === "function"
+                  ? styles.popupBody.padding(textSize)
+                  : styles.popupBody.padding,
+            }}
+          >
+            <div style={customStyles.confirmationContainer}>
+              <div style={{ display: "flex", justifyContent: "center" }}>
+                <AlertTriangle
+                  size={textSize === "large" ? 72 : 64}
+                  style={customStyles.warningIcon}
+                />
+              </div>
+              <div style={customStyles.confirmationText}>
+                Are you sure you want to cancel your hold on{" "}
+                <strong>{book?.title}</strong>?
+                <br/>
+                <br/>
+                This action cannot be undone. You will need to place a new hold if
+                you want to reserve this book again.
+              </div>
+              <div style={customStyles.buttonContainer}>
+                <button
+                  style={customStyles.cancelButton}
+                  onClick={onClose}
+                >
+                  No, Keep Hold
+                </button>
+                <button
+                  style={customStyles.confirmButton}
+                  onClick={onConfirm}
+                >
+                  Yes, Cancel Hold
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const showToggleButton = books.length > DISPLAY_LIMIT;
   const booksToShow = isExpanded ? books : books.slice(0, DISPLAY_LIMIT);
 
@@ -542,6 +695,15 @@ const BookSection = ({
           {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>
       )}
+
+      {/* Cancel Confirmation Popup */}
+      <CancelConfirmPopup
+        isOpen={isCancelConfirmOpen}
+        onClose={handleCloseCancelConfirm}
+        onConfirm={confirmCancelHold}
+        book={bookToCancel}
+        textSize={textSize}
+      />
     </div>
   );
 };

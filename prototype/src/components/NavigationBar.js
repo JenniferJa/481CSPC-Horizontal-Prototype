@@ -55,11 +55,12 @@ function NavigationBar({ currentPage, setCurrentPage, textSize, setTextSize, isL
         {/* Right: Text Size & Profile */}
         <div style={styles.navRight}>
           <button
-            style={styles.iconButton}
+            style={textSize === 'large' ? styles.iconButtonActive : styles.iconButton}
             onClick={() => setTextSize(textSize === 'normal' ? 'large' : 'normal')}
-            title="Enlarge Text"
+            title={textSize === 'large' ? 'Decrease Text Size' : 'Enlarge Text'}
+            data-font-size-toggle={textSize}
           >
-            <ALargeSmall size={20} />
+            <ALargeSmall />
           </button>
 
           {isLoggedIn ? (
