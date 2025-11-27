@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Star, MapPin, X, CheckCircle, ChevronLeft } from "lucide-react";
+import { Star, MapPin, X, CheckCircle, ChevronLeft, Heart } from "lucide-react";
 import { getStyles } from "../../styles/styles";
 import HoldPlacementPopup from "../HoldPlacementButtonPopup";
 
@@ -453,6 +453,25 @@ function SelectedItemsPage({
     setIsCancelHoldOpen(false);
   };
 
+  const [isWishlistPopupOpen, setIsWishlistPopupOpen] = useState(false);
+
+  const handleLike = () => {
+    setUserBookLists((prevLists) => ({
+      ...prevLists,
+      wishlist: [...prevLists.wishlist, { bookId: id }],
+    }));
+    setIsWishlistPopupOpen(true);
+  };
+
+  const handleUnlike = () => {
+    setUserBookLists((prevLists) => ({
+      ...prevLists,
+      wishlist: prevLists.wishlist.filter((item) => item.bookId !== id),
+    }));
+  };
+  const isOnWishlist =
+    isLoggedIn && userBookLists.wishlist.some((item) => item.bookId === id);
+
   return (
     <div style={styles.pageContainer}>
       <div style={styles.contentBox(textSize)}>
@@ -589,21 +608,6 @@ function SelectedItemsPage({
                   </button>
                 )}
 
-                {/* {!isAvailableForHold && !isUnavailable && (
-                  <p
-                    style={{
-                      ...customStyles.label,
-                      color: "#dc2626",
-                      fontSize: "15px",
-                      fontWeight: "500",
-                      alignSelf: "center",
-                    }}
-                  >
-                    {userStatus === "On Hold"
-                      ? "Already on hold"
-                      : "Not available to place on hold"}
-                  </p>
-                )} */}
                 {userStatus === "On Hold" && (
                   <button
                     onClick={handleCancelHold}
@@ -642,19 +646,28 @@ function SelectedItemsPage({
                     </p>
                   )}
 
-                <div style={{ fontFamily: "system-ui, sans-serif" }}>
-                  <button
-                    onClick={handleAddToWishlist}
-                    style={{
-                      ...styles.button(textSize),
-                      width: "auto",
-                      paddingLeft: "24px",
-                      paddingRight: "24px",
-                    }}
-                  >
-                    Add to Wishlist
-                  </button>
-                </div>
+                <button
+                  onClick={isOnWishlist ? handleUnlike : handleLike}
+                  title={
+                    isOnWishlist ? "Remove from Wishlist" : "Add to Wishlist"
+                  }
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: 0,
+                    marginLeft: "10px",
+                    display: "flex",
+                    alignItems: "center",
+                    color: isOnWishlist ? "#e63946" : "#444",
+                  }}
+                >
+                  <Heart
+                    size={textSize === "large" ? 26 : 22}
+                    fill={isOnWishlist ? "currentColor" : "transparent"}
+                    style={{ transition: "0.2s" }}
+                  />
+                </button>
               </div>
             ) : (
               <div
