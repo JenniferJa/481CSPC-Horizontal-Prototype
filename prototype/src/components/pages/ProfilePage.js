@@ -73,14 +73,17 @@ const BookSection = ({
 
   // Style for the clickable (i) button
   const infoButtonStyle = {
-    background: "none",
     border: "none",
-    color: "#007bff",
+    color: "#ffffffff",
     cursor: "pointer",
     fontSize: "1rem",
     fontWeight: "bold",
     marginLeft: "5px",
-    padding: "0 5px",
+    padding: "2px 9px 3px 8.5px",
+
+    borderRadius: "50%",
+    backgroundColor: "#007bff",
+
   };
 
   // click handler for the (i) button
@@ -502,7 +505,7 @@ const BookSection = ({
               onClick={handleFineInfoClick}
               title="Fine Information"
             >
-              (i)
+              i
             </button>
           </div>
         )}
