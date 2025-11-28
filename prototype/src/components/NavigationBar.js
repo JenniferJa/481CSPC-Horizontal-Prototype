@@ -30,7 +30,7 @@ function NavigationBar({
             onClick={() => setCurrentPage("home")}
           >
             <img
-              src={process.env.PUBLIC_URL + "/uofc_onlylogo.png"}
+              src="images/uofc_onlylogo.png"
               alt="logo"
               style={styles.logo}
             />
