@@ -171,13 +171,13 @@ function HoldPlacementPopup({
   };
 
   const handlePlaceHold = () => {
-    if (onPlaceHoldConfirm) {
-      onPlaceHoldConfirm(selectedLocation);
-    }
     setScreen("confirmation");
   };
 
   const handleClose = () => {
+    if (onPlaceHoldConfirm) {
+      onPlaceHoldConfirm(selectedLocation);
+    }
     setIsOpen(false);
     setTimeout(() => {
       setScreen("form");

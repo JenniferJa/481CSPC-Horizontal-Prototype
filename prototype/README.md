@@ -4,6 +4,11 @@
 
 
 
+# How to Deploy
+1. cd protoype
+2. npm install gh-pages --save-dev
+3. make sure all changes are pushed to repo
+4. npm run deploy
 
 
 
